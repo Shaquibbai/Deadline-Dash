@@ -2,9 +2,13 @@ package io.github.shaquibbai.deadlinedash.map;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
@@ -37,7 +41,29 @@ public class MapManager {
 
         TmxMapLoader loader = new TmxMapLoader();
         tiledMap = loader.load(mapPath);
-        mapRenderer = new OrthogonalTiledMapRenderer(tiledMap, batch);
+        mapRenderer = new OrthogonalTiledMapRenderer(tiledMap, batch) {
+            @Override
+            public void renderObject(MapObject object) {
+                if (object instanceof TiledMapTileMapObject tileObject) {
+                    TiledMapTile tile = tileObject.getTile();
+                    if (tile != null) {
+                        TextureRegion region = tile.getTextureRegion();
+                        if (region != null) {
+                            float x = tileObject.getX();
+                            float y = tileObject.getY();
+                            float width = region.getRegionWidth();
+                            float height = region.getRegionHeight();
+
+                            float scaleX = tileObject.getScaleX() * (tileObject.isFlipHorizontally() ? -1f : 1f);
+                            float scaleY = tileObject.getScaleY() * (tileObject.isFlipVertically() ? -1f : 1f);
+                            float rotation = tileObject.getRotation();
+
+                            getBatch().draw(region, x, y, 0f, 0f, width, height, scaleX, scaleY, rotation);
+                        }
+                    }
+                }
+            }
+        };
 
         calculateWorldBounds();
     }
