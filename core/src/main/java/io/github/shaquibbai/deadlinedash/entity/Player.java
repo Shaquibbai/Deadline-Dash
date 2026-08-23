@@ -20,6 +20,7 @@ public class Player {
     private float moveSpeed;
 
     private Texture placeholderTexture;
+    private final com.badlogic.gdx.math.Rectangle collisionBounds = new com.badlogic.gdx.math.Rectangle();
 
     public Player(float startX, float startY, float width, float height, float moveSpeed) {
         this.position = new Vector2(startX, startY);
@@ -44,7 +45,20 @@ public class Player {
 
     private String currentDirection = "IDLE";
 
-    public void update(float delta, boolean freeCamera) {
+    public boolean isColliding(float testX, float testY, com.badlogic.gdx.utils.Array<com.badlogic.gdx.math.Rectangle> collisionObjects) {
+        if (collisionObjects == null || collisionObjects.isEmpty()) {
+            return false;
+        }
+        collisionBounds.set(testX, testY, width, height);
+        for (com.badlogic.gdx.math.Rectangle rect : collisionObjects) {
+            if (collisionBounds.overlaps(rect)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void update(float delta, boolean freeCamera, com.badlogic.gdx.utils.Array<com.badlogic.gdx.math.Rectangle> collisionObjects) {
         if (freeCamera) {
             return;
         }
@@ -75,12 +89,31 @@ public class Player {
             moveY *= 0.7071f;
         }
 
-        position.x += moveX * moveSpeed * delta;
-        position.y += moveY * moveSpeed * delta;
+        float deltaX = moveX * moveSpeed * delta;
+        float deltaY = moveY * moveSpeed * delta;
+
+        // Axis-separated movement to allow wall sliding
+        if (deltaX != 0f) {
+            float newX = position.x + deltaX;
+            if (!isColliding(newX, position.y, collisionObjects)) {
+                position.x = newX;
+            }
+        }
+
+        if (deltaY != 0f) {
+            float newY = position.y + deltaY;
+            if (!isColliding(position.x, newY, collisionObjects)) {
+                position.y = newY;
+            }
+        }
+    }
+
+    public void update(float delta, boolean freeCamera) {
+        update(delta, freeCamera, null);
     }
 
     public void update(float delta) {
-        update(delta, false);
+        update(delta, false, null);
     }
 
     public String getCurrentDirection() {

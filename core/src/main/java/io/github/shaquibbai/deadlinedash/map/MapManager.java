@@ -26,6 +26,7 @@ public class MapManager {
 
     private final Rectangle worldBounds = new Rectangle();
     private final Vector2 defaultSpawnPosition = new Vector2();
+    private final com.badlogic.gdx.utils.Array<Rectangle> collisionRectangles = new com.badlogic.gdx.utils.Array<>();
 
     public MapManager(String mapPath, SpriteBatch batch) {
         loadMap(mapPath, batch);
@@ -66,6 +67,19 @@ public class MapManager {
         };
 
         calculateWorldBounds();
+        loadCollisionObjects();
+    }
+
+    private void loadCollisionObjects() {
+        collisionRectangles.clear();
+        MapLayer collisionLayer = tiledMap.getLayers().get("Collision");
+        if (collisionLayer != null) {
+            for (MapObject object : collisionLayer.getObjects()) {
+                if (object instanceof com.badlogic.gdx.maps.objects.RectangleMapObject rectObject) {
+                    collisionRectangles.add(rectObject.getRectangle());
+                }
+            }
+        }
     }
 
     /**
@@ -95,6 +109,10 @@ public class MapManager {
 
     public TiledMap getTiledMap() {
         return tiledMap;
+    }
+
+    public com.badlogic.gdx.utils.Array<Rectangle> getCollisionRectangles() {
+        return collisionRectangles;
     }
 
     public Rectangle getWorldBounds() {

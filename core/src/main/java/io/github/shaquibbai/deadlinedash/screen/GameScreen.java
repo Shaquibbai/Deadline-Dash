@@ -103,10 +103,10 @@ public class GameScreen implements Screen {
             float freeCamSpeed = 3500f;
             camera.position.x += camMoveX * freeCamSpeed * delta;
             camera.position.y += camMoveY * freeCamSpeed * delta;
-            player.update(delta, true); // Don't move player in F3 mode
+            player.update(delta, true, mapManager.getCollisionRectangles()); // Don't move player in F3 mode
         } else {
             // Normal Gameplay Mode: WASD moves player, camera follows player
-            player.update(delta, false);
+            player.update(delta, false, mapManager.getCollisionRectangles());
             camera.position.set(player.getCenterX(), player.getCenterY(), 0f);
         }
 
