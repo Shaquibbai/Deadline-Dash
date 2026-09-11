@@ -29,6 +29,10 @@ public class GameScreen implements Screen {
     private MapManager mapManager;
     private Player player;
 
+    private io.github.shaquibbai.deadlinedash.map.SceneTransition currentInsideTransition = null;
+    private String triggeredTransitionName = "";
+    private float transitionMessageTimer = 0f;
+
     // Configurable virtual viewport size (tested during prototype)
     private static final float VIRTUAL_WIDTH = 1280f;
     private static final float VIRTUAL_HEIGHT = 720f;
@@ -103,11 +107,23 @@ public class GameScreen implements Screen {
             float freeCamSpeed = 3500f;
             camera.position.x += camMoveX * freeCamSpeed * delta;
             camera.position.y += camMoveY * freeCamSpeed * delta;
-            player.update(delta, true, mapManager.getCollisionRectangles()); // Don't move player in F3 mode
+            player.update(delta, true, mapManager.getCollisionPolygons()); // Don't move player in F3 mode
         } else {
             // Normal Gameplay Mode: WASD moves player, camera follows player
-            player.update(delta, false, mapManager.getCollisionRectangles());
+            player.update(delta, false, mapManager.getCollisionPolygons());
             camera.position.set(player.getCenterX(), player.getCenterY(), 0f);
+        }
+
+        // 1. Transition detection (cleanly separated from transition actions)
+        io.github.shaquibbai.deadlinedash.map.SceneTransition overlappingTransition = player.getOverlappingTransition(mapManager.getSceneTransitions());
+        if (overlappingTransition != null && overlappingTransition != currentInsideTransition) {
+            // Edge-triggered: player just entered a new transition zone
+            handleTransitionTriggered(overlappingTransition);
+        }
+        currentInsideTransition = overlappingTransition;
+
+        if (transitionMessageTimer > 0f) {
+            transitionMessageTimer -= delta;
         }
 
         camera.update();
@@ -116,8 +132,9 @@ public class GameScreen implements Screen {
         logTimer += delta;
         if (logTimer >= 1.0f) {
             logTimer = 0f;
-            System.out.printf("[DIAGNOSTIC] Player: (%.1f, %.1f) | Cam: (%.1f, %.1f) | Dir: %s | F3_FreeCam: %b%n",
-                player.getX(), player.getY(), camera.position.x, camera.position.y, player.getCurrentDirection(), isF3Pressed);
+            System.out.printf("[DIAGNOSTIC] Player: (%.1f, %.1f) | Cam: (%.1f, %.1f) | Dir: %s | F3_FreeCam: %b | Transition: %s%n",
+                player.getX(), player.getY(), camera.position.x, camera.position.y, player.getCurrentDirection(), isF3Pressed,
+                currentInsideTransition != null ? currentInsideTransition.getName() : "NONE");
         }
 
         // Render Tiled map layers
@@ -139,7 +156,33 @@ public class GameScreen implements Screen {
         debugFont.draw(batch, String.format("DIRECTION  : %s | SPEED: %.0f px/s", player.getCurrentDirection(), player.getMoveSpeed()), margin, startY - 50f);
         debugFont.draw(batch, String.format("MODE       : %s", isF3Pressed ? "FREE CAMERA MODE (WASD moves camera)" : "NORMAL MODE (WASD moves player)"), margin, startY - 75f);
         debugFont.draw(batch, "HOLD [F3]  : Move camera independently to inspect campus map", margin, startY - 100f);
+
+        String transitionStatus = "NONE";
+        if (currentInsideTransition != null) {
+            transitionStatus = "INSIDE: " + currentInsideTransition.getName();
+        } else if (transitionMessageTimer > 0f) {
+            transitionStatus = "TRIGGERED: " + triggeredTransitionName;
+        }
+        debugFont.draw(batch, String.format("TRANSITION : %s", transitionStatus), margin, startY - 125f);
+
+        if (transitionMessageTimer > 0f || currentInsideTransition != null) {
+            String activeName = currentInsideTransition != null ? currentInsideTransition.getName() : triggeredTransitionName;
+            debugFont.setColor(com.badlogic.gdx.graphics.Color.RED);
+            debugFont.draw(batch, "TRANSITION TRIGGERED: " + activeName, VIRTUAL_WIDTH / 2f - 220f, VIRTUAL_HEIGHT - 40f);
+            debugFont.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
+        }
         batch.end();
+    }
+
+    /**
+     * 2. Action triggered upon entering a scene transition zone.
+     * Decoupled from detection logic to easily integrate actual map transitions in future phases.
+     */
+    private void handleTransitionTriggered(io.github.shaquibbai.deadlinedash.map.SceneTransition transition) {
+        triggeredTransitionName = transition.getName();
+        transitionMessageTimer = 3.0f;
+        System.out.printf("[TRANSITION] TRANSITION TRIGGERED: %s at player pos (%.1f, %.1f)%n",
+            transition.getName(), player.getX(), player.getY());
     }
 
     @Override

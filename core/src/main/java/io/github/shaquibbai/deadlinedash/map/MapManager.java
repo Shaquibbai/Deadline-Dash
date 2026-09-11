@@ -26,7 +26,8 @@ public class MapManager {
 
     private final Rectangle worldBounds = new Rectangle();
     private final Vector2 defaultSpawnPosition = new Vector2();
-    private final com.badlogic.gdx.utils.Array<Rectangle> collisionRectangles = new com.badlogic.gdx.utils.Array<>();
+    private final com.badlogic.gdx.utils.Array<com.badlogic.gdx.math.Polygon> collisionPolygons = new com.badlogic.gdx.utils.Array<>();
+    private final com.badlogic.gdx.utils.Array<SceneTransition> sceneTransitions = new com.badlogic.gdx.utils.Array<>();
 
     public MapManager(String mapPath, SpriteBatch batch) {
         loadMap(mapPath, batch);
@@ -68,15 +69,66 @@ public class MapManager {
 
         calculateWorldBounds();
         loadCollisionObjects();
+        loadSceneTransitions();
+    }
+
+    private com.badlogic.gdx.math.Polygon createPolygonFromMapObject(MapObject object) {
+        if (object instanceof com.badlogic.gdx.maps.objects.RectangleMapObject rectObject) {
+            Rectangle rect = rectObject.getRectangle();
+            float rotation = 0f;
+            Object rotProp = object.getProperties().get("rotation");
+            if (rotProp instanceof Number num) {
+                rotation = num.floatValue();
+            } else if (rotProp instanceof String str) {
+                try {
+                    rotation = Float.parseFloat(str);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+
+            // In Tiled, rectangle rotation pivots around the top-left corner.
+            // In LibGDX world coordinates (bottom-left origin), the top-left is (rect.x, rect.y + rect.height).
+            // Clockwise rotation in Tiled screen coordinates corresponds to negative degrees (-rotation) in LibGDX.
+            com.badlogic.gdx.math.Polygon polygon = new com.badlogic.gdx.math.Polygon(new float[] {
+                0, 0,
+                rect.width, 0,
+                rect.width, -rect.height,
+                0, -rect.height
+            });
+            polygon.setPosition(rect.x, rect.y + rect.height);
+            polygon.setOrigin(0, 0);
+            if (rotation != 0f) {
+                polygon.setRotation(-rotation);
+            }
+            return polygon;
+        } else if (object instanceof com.badlogic.gdx.maps.objects.PolygonMapObject polyObject) {
+            return polyObject.getPolygon();
+        }
+        return null;
     }
 
     private void loadCollisionObjects() {
-        collisionRectangles.clear();
+        collisionPolygons.clear();
         MapLayer collisionLayer = tiledMap.getLayers().get("Collision");
         if (collisionLayer != null) {
             for (MapObject object : collisionLayer.getObjects()) {
-                if (object instanceof com.badlogic.gdx.maps.objects.RectangleMapObject rectObject) {
-                    collisionRectangles.add(rectObject.getRectangle());
+                com.badlogic.gdx.math.Polygon polygon = createPolygonFromMapObject(object);
+                if (polygon != null) {
+                    collisionPolygons.add(polygon);
+                }
+            }
+        }
+    }
+
+    private void loadSceneTransitions() {
+        sceneTransitions.clear();
+        MapLayer transitionLayer = tiledMap.getLayers().get("SceneTransitions");
+        if (transitionLayer != null) {
+            for (MapObject object : transitionLayer.getObjects()) {
+                com.badlogic.gdx.math.Polygon polygon = createPolygonFromMapObject(object);
+                if (polygon != null) {
+                    String name = object.getName();
+                    sceneTransitions.add(new SceneTransition(name, polygon));
                 }
             }
         }
@@ -111,8 +163,12 @@ public class MapManager {
         return tiledMap;
     }
 
-    public com.badlogic.gdx.utils.Array<Rectangle> getCollisionRectangles() {
-        return collisionRectangles;
+    public com.badlogic.gdx.utils.Array<com.badlogic.gdx.math.Polygon> getCollisionPolygons() {
+        return collisionPolygons;
+    }
+
+    public com.badlogic.gdx.utils.Array<SceneTransition> getSceneTransitions() {
+        return sceneTransitions;
     }
 
     public Rectangle getWorldBounds() {

@@ -21,6 +21,7 @@ public class Player {
 
     private Texture placeholderTexture;
     private final com.badlogic.gdx.math.Rectangle collisionBounds = new com.badlogic.gdx.math.Rectangle();
+    private final com.badlogic.gdx.math.Polygon playerPolygon = new com.badlogic.gdx.math.Polygon();
 
     public Player(float startX, float startY, float width, float height, float moveSpeed) {
         this.position = new Vector2(startX, startY);
@@ -28,7 +29,17 @@ public class Player {
         this.height = height;
         this.moveSpeed = moveSpeed;
 
+        updatePlayerPolygonVertices();
         createPlaceholderTexture();
+    }
+
+    private void updatePlayerPolygonVertices() {
+        playerPolygon.setVertices(new float[] {
+            0, 0,
+            width, 0,
+            width, height,
+            0, height
+        });
     }
 
     private void createPlaceholderTexture() {
@@ -45,20 +56,44 @@ public class Player {
 
     private String currentDirection = "IDLE";
 
-    public boolean isColliding(float testX, float testY, com.badlogic.gdx.utils.Array<com.badlogic.gdx.math.Rectangle> collisionObjects) {
-        if (collisionObjects == null || collisionObjects.isEmpty()) {
+    public boolean isColliding(float testX, float testY, com.badlogic.gdx.utils.Array<com.badlogic.gdx.math.Polygon> collisionPolygons) {
+        if (collisionPolygons == null || collisionPolygons.isEmpty()) {
             return false;
         }
         collisionBounds.set(testX, testY, width, height);
-        for (com.badlogic.gdx.math.Rectangle rect : collisionObjects) {
-            if (collisionBounds.overlaps(rect)) {
-                return true;
+        playerPolygon.setPosition(testX, testY);
+
+        for (com.badlogic.gdx.math.Polygon poly : collisionPolygons) {
+            // Fast AABB broadphase check
+            if (collisionBounds.overlaps(poly.getBoundingRectangle())) {
+                // Precise SAT convex polygon narrowphase check
+                if (com.badlogic.gdx.math.Intersector.overlapConvexPolygons(playerPolygon, poly)) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    public void update(float delta, boolean freeCamera, com.badlogic.gdx.utils.Array<com.badlogic.gdx.math.Rectangle> collisionObjects) {
+    public io.github.shaquibbai.deadlinedash.map.SceneTransition getOverlappingTransition(com.badlogic.gdx.utils.Array<io.github.shaquibbai.deadlinedash.map.SceneTransition> transitions) {
+        if (transitions == null || transitions.isEmpty()) {
+            return null;
+        }
+        collisionBounds.set(position.x, position.y, width, height);
+        playerPolygon.setPosition(position.x, position.y);
+
+        for (io.github.shaquibbai.deadlinedash.map.SceneTransition transition : transitions) {
+            com.badlogic.gdx.math.Polygon poly = transition.getCollisionPolygon();
+            if (poly != null && collisionBounds.overlaps(poly.getBoundingRectangle())) {
+                if (com.badlogic.gdx.math.Intersector.overlapConvexPolygons(playerPolygon, poly)) {
+                    return transition;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void update(float delta, boolean freeCamera, com.badlogic.gdx.utils.Array<com.badlogic.gdx.math.Polygon> collisionPolygons) {
         if (freeCamera) {
             return;
         }
@@ -95,14 +130,14 @@ public class Player {
         // Axis-separated movement to allow wall sliding
         if (deltaX != 0f) {
             float newX = position.x + deltaX;
-            if (!isColliding(newX, position.y, collisionObjects)) {
+            if (!isColliding(newX, position.y, collisionPolygons)) {
                 position.x = newX;
             }
         }
 
         if (deltaY != 0f) {
             float newY = position.y + deltaY;
-            if (!isColliding(position.x, newY, collisionObjects)) {
+            if (!isColliding(position.x, newY, collisionPolygons)) {
                 position.y = newY;
             }
         }
@@ -152,6 +187,7 @@ public class Player {
 
     public void setWidth(float width) {
         this.width = width;
+        updatePlayerPolygonVertices();
     }
 
     public float getHeight() {
@@ -160,6 +196,7 @@ public class Player {
 
     public void setHeight(float height) {
         this.height = height;
+        updatePlayerPolygonVertices();
     }
 
     public float getMoveSpeed() {
