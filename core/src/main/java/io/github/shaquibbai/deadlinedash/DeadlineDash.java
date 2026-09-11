@@ -2,7 +2,7 @@ package io.github.shaquibbai.deadlinedash;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import io.github.shaquibbai.deadlinedash.screen.GameScreen;
+import io.github.shaquibbai.deadlinedash.screen.OpeningScreen;
 
 /** Main game application entry point. */
 public class DeadlineDash extends Game {
@@ -11,7 +11,7 @@ public class DeadlineDash extends Game {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        setScreen(new GameScreen(this));
+        setScreen(new OpeningScreen(this));
     }
 
     public SpriteBatch getBatch() {

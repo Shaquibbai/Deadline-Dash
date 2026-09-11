@@ -33,6 +33,11 @@ public class GameScreen implements Screen {
     private String triggeredTransitionName = "";
     private float transitionMessageTimer = 0f;
 
+    // Camera Zoom Config (0.25 <= camera.zoom <= 2.0)
+    private static final float MIN_ZOOM = 2.f;
+    private static final float MAX_ZOOM = 20.f;
+    private static final float ZOOM_STEP = 0.1f;
+
     // Configurable virtual viewport size (tested during prototype)
     private static final float VIRTUAL_WIDTH = 1280f;
     private static final float VIRTUAL_HEIGHT = 720f;
@@ -48,8 +53,8 @@ public class GameScreen implements Screen {
     private void initCameraAndViewport() {
         camera = new OrthographicCamera();
         viewport = new FitViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, camera);
-        // Visible world area setting (camera.zoom = 2.5f)
-        camera.zoom = 2.5f;
+        // Default initial zoom setting, clamped between MIN_ZOOM (0.25) and MAX_ZOOM (2.0)
+        camera.zoom = 1.0f;
         viewport.apply();
 
         hudCamera = new OrthographicCamera();
@@ -67,7 +72,7 @@ public class GameScreen implements Screen {
         // Player width and height are independently configurable from world tile size (64x64)
         float playerWidth = 40f;
         float playerHeight = 60f;
-        
+
         // Temporarily increased movement speed for testing (2500 px/s)
         float moveSpeed = 2500f;
 
@@ -87,6 +92,15 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
+
+        // Camera Zoom Controls (M: Zoom IN, N: Zoom OUT)
+        if (com.badlogic.gdx.Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.M)) {
+            camera.zoom -= ZOOM_STEP;
+        }
+        if (com.badlogic.gdx.Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.N)) {
+            camera.zoom += ZOOM_STEP;
+        }
+        camera.zoom = com.badlogic.gdx.math.MathUtils.clamp(camera.zoom, MIN_ZOOM, MAX_ZOOM);
 
         boolean isF3Pressed = com.badlogic.gdx.Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.F3);
 
@@ -152,7 +166,7 @@ public class GameScreen implements Screen {
         float margin = 20f;
         float startY = VIRTUAL_HEIGHT - 20f;
         debugFont.draw(batch, String.format("PLAYER POS : X=%.1f, Y=%.1f [Tile X=%.0f, Y=%.0f]", player.getX(), player.getY(), player.getX() / 64f, player.getY() / 64f), margin, startY);
-        debugFont.draw(batch, String.format("CAMERA POS : X=%.1f, Y=%.1f", camera.position.x, camera.position.y), margin, startY - 25f);
+        debugFont.draw(batch, String.format("CAMERA POS : X=%.1f, Y=%.1f | ZOOM: %.2f (M: In, N: Out)", camera.position.x, camera.position.y, camera.zoom), margin, startY - 25f);
         debugFont.draw(batch, String.format("DIRECTION  : %s | SPEED: %.0f px/s", player.getCurrentDirection(), player.getMoveSpeed()), margin, startY - 50f);
         debugFont.draw(batch, String.format("MODE       : %s", isF3Pressed ? "FREE CAMERA MODE (WASD moves camera)" : "NORMAL MODE (WASD moves player)"), margin, startY - 75f);
         debugFont.draw(batch, "HOLD [F3]  : Move camera independently to inspect campus map", margin, startY - 100f);

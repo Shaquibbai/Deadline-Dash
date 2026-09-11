@@ -5,21 +5,61 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 
 /**
  * Main Character (MC) entity.
- * Handles continuous 4-directional movement (WASD / Arrow Keys).
- * Player dimensions (width, height) are independently configurable from world tile dimensions.
+ * Handles 4-directional movement (WASD / Arrow Keys) and renders
+ * explicitly mapped, foot-anchored idle and walking animations.
  */
 public class Player {
+    public enum FacingDirection {
+        UP, DOWN, LEFT, RIGHT
+    }
+
     private final Vector2 position;
     private float width;
     private float height;
     private float moveSpeed;
 
+    private FacingDirection facingDirection = FacingDirection.DOWN;
+    private boolean isMoving = false;
+    private float stateTime = 0f;
+
+    // Sprite Textures
+    private Texture walkDownTexture;
+    private Texture walkUpTexture;
+    private Texture walkLeftTexture;
+    private Texture walkRightTexture;
+    private Texture idleTexture;
     private Texture placeholderTexture;
+
+    // Animations
+    private Animation<TextureRegion> walkDownAnim;
+    private Animation<TextureRegion> walkUpAnim;
+    private Animation<TextureRegion> walkLeftAnim;
+    private Animation<TextureRegion> walkRightAnim;
+
+    private Animation<TextureRegion> idleDownAnim;
+    private Animation<TextureRegion> idleUpAnim;
+    private Animation<TextureRegion> idleLeftAnim;
+    private Animation<TextureRegion> idleRightAnim;
+
+    // Animation & Uniform Cell World Scale Config
+    private static final float WALK_FRAME_DURATION = 0.10f;
+    private static final float IDLE_FRAME_DURATION = 0.40f;
+
+    // Standardized 128x183 cell dimensions mapped to world-space units
+    private static final float CELL_FRAME_WIDTH = 128f;
+    private static final float CELL_FRAME_HEIGHT = 183f;
+    private static final float RENDER_CELL_HEIGHT = 79.8f; // Uniform world height for all directions (~5% larger)
+    private static final float RENDER_CELL_WIDTH = RENDER_CELL_HEIGHT * (CELL_FRAME_WIDTH / CELL_FRAME_HEIGHT); // ~55.8f
+    private static final float FOOT_Y_OFFSET = RENDER_CELL_HEIGHT * (10f / CELL_FRAME_HEIGHT); // Feet baseline anchor
+
     private final com.badlogic.gdx.math.Rectangle collisionBounds = new com.badlogic.gdx.math.Rectangle();
     private final com.badlogic.gdx.math.Polygon playerPolygon = new com.badlogic.gdx.math.Polygon();
 
@@ -30,7 +70,7 @@ public class Player {
         this.moveSpeed = moveSpeed;
 
         updatePlayerPolygonVertices();
-        createPlaceholderTexture();
+        initAnimations();
     }
 
     private void updatePlayerPolygonVertices() {
@@ -42,6 +82,81 @@ public class Player {
         });
     }
 
+    private void initAnimations() {
+        try {
+            // 1. Walk Down (assets/player/walk/down.png) -> 8 frames horizontal (128x183)
+            walkDownTexture = new Texture(Gdx.files.internal("player/walk/down.png"));
+            walkDownTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            Array<TextureRegion> walkDownFrames = new Array<>();
+            for (int i = 0; i < 8; i++) {
+                walkDownFrames.add(new TextureRegion(walkDownTexture, i * 128, 0, 128, 183));
+            }
+            walkDownAnim = new Animation<>(WALK_FRAME_DURATION, walkDownFrames, Animation.PlayMode.LOOP);
+
+            // 2. Walk Up (assets/player/walk/up.png) -> 8 frames horizontal (128x183)
+            walkUpTexture = new Texture(Gdx.files.internal("player/walk/up.png"));
+            walkUpTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            Array<TextureRegion> walkUpFrames = new Array<>();
+            for (int i = 0; i < 8; i++) {
+                walkUpFrames.add(new TextureRegion(walkUpTexture, i * 128, 0, 128, 183));
+            }
+            walkUpAnim = new Animation<>(WALK_FRAME_DURATION, walkUpFrames, Animation.PlayMode.LOOP);
+
+            // 3. Walk Left (assets/player/walk/left.png) -> 8 frames horizontal (128x183)
+            walkLeftTexture = new Texture(Gdx.files.internal("player/walk/left.png"));
+            walkLeftTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            Array<TextureRegion> walkLeftFrames = new Array<>();
+            for (int i = 0; i < 8; i++) {
+                walkLeftFrames.add(new TextureRegion(walkLeftTexture, i * 128, 0, 128, 183));
+            }
+            walkLeftAnim = new Animation<>(WALK_FRAME_DURATION, walkLeftFrames, Animation.PlayMode.LOOP);
+
+            // 4. Walk Right (assets/player/walk/right.png) -> 8 frames horizontal (363x520)
+            walkRightTexture = new Texture(Gdx.files.internal("player/walk/right.png"));
+            walkRightTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            Array<TextureRegion> walkRightFrames = new Array<>();
+            int rightFrameWidth = walkRightTexture.getWidth() / 8;
+            int rightFrameHeight = walkRightTexture.getHeight();
+            for (int i = 0; i < 8; i++) {
+                walkRightFrames.add(new TextureRegion(walkRightTexture, i * rightFrameWidth, 0, rightFrameWidth, rightFrameHeight));
+            }
+            walkRightAnim = new Animation<>(WALK_FRAME_DURATION, walkRightFrames, Animation.PlayMode.LOOP);
+
+            // 5. Idle Sheet (assets/player/idle/idle_sheet.png) -> 8 horizontal cells (128x183 each)
+            idleTexture = new Texture(Gdx.files.internal("player/idle/idle_sheet.png"));
+            idleTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+            // Explicit mapping according to specification:
+            // cells 0–1 -> DOWN idle
+            Array<TextureRegion> idleDownFrames = new Array<>();
+            idleDownFrames.add(new TextureRegion(idleTexture, 0 * 128, 0, 128, 183));
+            idleDownFrames.add(new TextureRegion(idleTexture, 1 * 128, 0, 128, 183));
+            idleDownAnim = new Animation<>(IDLE_FRAME_DURATION, idleDownFrames, Animation.PlayMode.LOOP);
+
+            // cells 2–3 -> UP idle
+            Array<TextureRegion> idleUpFrames = new Array<>();
+            idleUpFrames.add(new TextureRegion(idleTexture, 2 * 128, 0, 128, 183));
+            idleUpFrames.add(new TextureRegion(idleTexture, 3 * 128, 0, 128, 183));
+            idleUpAnim = new Animation<>(IDLE_FRAME_DURATION, idleUpFrames, Animation.PlayMode.LOOP);
+
+            // cells 6–7 -> LEFT idle
+            Array<TextureRegion> idleLeftFrames = new Array<>();
+            idleLeftFrames.add(new TextureRegion(idleTexture, 6 * 128, 0, 128, 183));
+            idleLeftFrames.add(new TextureRegion(idleTexture, 7 * 128, 0, 128, 183));
+            idleLeftAnim = new Animation<>(IDLE_FRAME_DURATION, idleLeftFrames, Animation.PlayMode.LOOP);
+
+            // cells 4–5 -> RIGHT idle
+            Array<TextureRegion> idleRightFrames = new Array<>();
+            idleRightFrames.add(new TextureRegion(idleTexture, 4 * 128, 0, 128, 183));
+            idleRightFrames.add(new TextureRegion(idleTexture, 5 * 128, 0, 128, 183));
+            idleRightAnim = new Animation<>(IDLE_FRAME_DURATION, idleRightFrames, Animation.PlayMode.LOOP);
+
+        } catch (Exception e) {
+            System.err.println("[PLAYER] Error loading sprite animations: " + e.getMessage());
+            createPlaceholderTexture();
+        }
+    }
+
     private void createPlaceholderTexture() {
         Pixmap pixmap = new Pixmap(32, 32, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.NAVY);
@@ -49,14 +164,12 @@ public class Player {
         pixmap.setColor(Color.GOLD);
         pixmap.drawRectangle(0, 0, 32, 32);
         pixmap.setColor(Color.WHITE);
-        pixmap.fillRectangle(8, 20, 16, 8); // Simple visor / indicator for facing direction visual
+        pixmap.fillRectangle(8, 20, 16, 8);
         placeholderTexture = new Texture(pixmap);
         pixmap.dispose();
     }
 
-    private String currentDirection = "IDLE";
-
-    public boolean isColliding(float testX, float testY, com.badlogic.gdx.utils.Array<com.badlogic.gdx.math.Polygon> collisionPolygons) {
+    public boolean isColliding(float testX, float testY, Array<com.badlogic.gdx.math.Polygon> collisionPolygons) {
         if (collisionPolygons == null || collisionPolygons.isEmpty()) {
             return false;
         }
@@ -64,9 +177,7 @@ public class Player {
         playerPolygon.setPosition(testX, testY);
 
         for (com.badlogic.gdx.math.Polygon poly : collisionPolygons) {
-            // Fast AABB broadphase check
             if (collisionBounds.overlaps(poly.getBoundingRectangle())) {
-                // Precise SAT convex polygon narrowphase check
                 if (com.badlogic.gdx.math.Intersector.overlapConvexPolygons(playerPolygon, poly)) {
                     return true;
                 }
@@ -75,7 +186,7 @@ public class Player {
         return false;
     }
 
-    public io.github.shaquibbai.deadlinedash.map.SceneTransition getOverlappingTransition(com.badlogic.gdx.utils.Array<io.github.shaquibbai.deadlinedash.map.SceneTransition> transitions) {
+    public io.github.shaquibbai.deadlinedash.map.SceneTransition getOverlappingTransition(Array<io.github.shaquibbai.deadlinedash.map.SceneTransition> transitions) {
         if (transitions == null || transitions.isEmpty()) {
             return null;
         }
@@ -93,10 +204,12 @@ public class Player {
         return null;
     }
 
-    public void update(float delta, boolean freeCamera, com.badlogic.gdx.utils.Array<com.badlogic.gdx.math.Polygon> collisionPolygons) {
+    public void update(float delta, boolean freeCamera, Array<com.badlogic.gdx.math.Polygon> collisionPolygons) {
         if (freeCamera) {
             return;
         }
+
+        stateTime += delta;
 
         float moveX = 0f;
         float moveY = 0f;
@@ -111,12 +224,28 @@ public class Player {
         if (left) moveX -= 1f;
         if (right) moveX += 1f;
 
-        if (up && !left && !right) currentDirection = "UP";
-        else if (down && !left && !right) currentDirection = "DOWN";
-        else if (left && !up && !down) currentDirection = "LEFT";
-        else if (right && !up && !down) currentDirection = "RIGHT";
-        else if (moveX != 0f || moveY != 0f) currentDirection = "MOVING";
-        else currentDirection = "IDLE";
+        // Unambiguous key-to-direction state updates:
+        // W / UP    -> UP
+        // S / DOWN  -> DOWN
+        // A / LEFT  -> LEFT
+        // D / RIGHT -> RIGHT
+        if (up) {
+            facingDirection = FacingDirection.UP;
+            isMoving = true;
+        } else if (down) {
+            facingDirection = FacingDirection.DOWN;
+            isMoving = true;
+        } else if (left) {
+            facingDirection = FacingDirection.LEFT;
+            isMoving = true;
+        } else if (right) {
+            facingDirection = FacingDirection.RIGHT;
+            isMoving = true;
+        } else if (moveX != 0f || moveY != 0f) {
+            isMoving = true;
+        } else {
+            isMoving = false; // Stopped: retains last facing direction
+        }
 
         // Normalize movement vector for uniform diagonal speed
         if (moveX != 0f && moveY != 0f) {
@@ -152,11 +281,52 @@ public class Player {
     }
 
     public String getCurrentDirection() {
-        return currentDirection;
+        return (isMoving ? "WALK_" : "IDLE_") + facingDirection.name();
+    }
+
+    public FacingDirection getFacingDirection() {
+        return facingDirection;
+    }
+
+    public boolean isMoving() {
+        return isMoving;
+    }
+
+    public TextureRegion getCurrentFrame() {
+        if (isMoving) {
+            switch (facingDirection) {
+                case UP: return walkUpAnim != null ? walkUpAnim.getKeyFrame(stateTime) : null;
+                case DOWN: return walkDownAnim != null ? walkDownAnim.getKeyFrame(stateTime) : null;
+                case LEFT: return walkLeftAnim != null ? walkLeftAnim.getKeyFrame(stateTime) : null;
+                case RIGHT: return walkRightAnim != null ? walkRightAnim.getKeyFrame(stateTime) : null;
+            }
+        } else {
+            switch (facingDirection) {
+                case UP: return idleUpAnim != null ? idleUpAnim.getKeyFrame(stateTime) : null;
+                case DOWN: return idleDownAnim != null ? idleDownAnim.getKeyFrame(stateTime) : null;
+                case LEFT: return idleLeftAnim != null ? idleLeftAnim.getKeyFrame(stateTime) : null;
+                case RIGHT: return idleRightAnim != null ? idleRightAnim.getKeyFrame(stateTime) : null;
+            }
+        }
+        return idleDownAnim != null ? idleDownAnim.getKeyFrame(stateTime) : null;
     }
 
     public void render(SpriteBatch batch) {
-        if (placeholderTexture != null) {
+        TextureRegion currentFrame = getCurrentFrame();
+
+        if (currentFrame != null) {
+            // Uniform render width & height for all directions (128x183 frame canvas)
+            float drawWidth = RENDER_CELL_WIDTH;
+            float drawHeight = RENDER_CELL_HEIGHT;
+
+            float centerX = position.x + width / 2f;
+            float footY = position.y;
+
+            float drawX = centerX - (drawWidth / 2f);
+            float drawY = footY - FOOT_Y_OFFSET;
+
+            batch.draw(currentFrame, drawX, drawY, drawWidth, drawHeight);
+        } else if (placeholderTexture != null) {
             batch.draw(placeholderTexture, position.x, position.y, width, height);
         }
     }
@@ -212,8 +382,11 @@ public class Player {
     }
 
     public void dispose() {
-        if (placeholderTexture != null) {
-            placeholderTexture.dispose();
-        }
+        if (walkDownTexture != null) walkDownTexture.dispose();
+        if (walkUpTexture != null) walkUpTexture.dispose();
+        if (walkLeftTexture != null) walkLeftTexture.dispose();
+        if (walkRightTexture != null) walkRightTexture.dispose();
+        if (idleTexture != null) idleTexture.dispose();
+        if (placeholderTexture != null) placeholderTexture.dispose();
     }
 }
