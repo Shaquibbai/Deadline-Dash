@@ -304,9 +304,14 @@ public class GameScreen implements Screen {
             }
         }
 
-        // ESC key closes Backpack UI if open
-        if (backpackUI.isOpen() && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            backpackUI.setOpen(false);
+        // ESC key: close backpack UI if open, otherwise return to Start Menu (TitleScreen)
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            if (backpackUI.isOpen()) {
+                backpackUI.setOpen(false);
+            } else {
+                returnToTitleScreen();
+                return;
+            }
         }
 
         // Mouse wheel / arrow key scroll support for Backpack UI
@@ -443,6 +448,11 @@ public class GameScreen implements Screen {
 
             System.out.printf("[TRANSITION] Successfully completed transition to map: %s%n", targetMap);
         }
+    }
+
+    private void returnToTitleScreen() {
+        game.setScreen(new TitleScreen(game));
+        dispose();
     }
 
     @Override
