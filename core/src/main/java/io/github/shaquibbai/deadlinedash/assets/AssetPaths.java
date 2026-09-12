@@ -6,4 +6,5 @@ package io.github.shaquibbai.deadlinedash.assets;
 public class AssetPaths {
     public static final String MAP_IUT_CAMPUS = "maps/IUTshaqs.tmx";
     public static final String TITLE_SCREEN_IMAGE = "title_screen.jpg";
+    public static final String BACKPACK_ICON = "ui/backpack_icon.png";
 }

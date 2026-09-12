@@ -1,20 +1,36 @@
 package io.github.shaquibbai.deadlinedash.screen;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.shaquibbai.deadlinedash.DeadlineDash;
 import io.github.shaquibbai.deadlinedash.assets.AssetPaths;
 import io.github.shaquibbai.deadlinedash.entity.Player;
+import io.github.shaquibbai.deadlinedash.inventory.Backpack;
+import io.github.shaquibbai.deadlinedash.inventory.BackpackUI;
+import io.github.shaquibbai.deadlinedash.inventory.Item;
+import io.github.shaquibbai.deadlinedash.inventory.ItemConfirmationDialog;
 import io.github.shaquibbai.deadlinedash.map.MapManager;
+import io.github.shaquibbai.deadlinedash.rep.RepSystem;
 
 /**
  * Main gameplay screen for Phase 1.
- * Coordinates rendering the IUT campus map, updating player movement, and camera tracking.
+ * Coordinates rendering the IUT campus map, updating player movement, camera tracking,
+ * and rendering HUD overlay UI (REP points HUD, fixed Backpack icon, centered Grid inventory panel, centered confirmation dialogs).
  */
 public class GameScreen implements Screen {
     private final DeadlineDash game;
@@ -24,7 +40,11 @@ public class GameScreen implements Screen {
     private Viewport viewport;
 
     private OrthographicCamera hudCamera;
-    private com.badlogic.gdx.graphics.g2d.BitmapFont debugFont;
+    private Viewport hudViewport;
+
+    private BitmapFont debugFont;
+    private BitmapFont hudFont;
+    private BitmapFont hudTitleFont;
 
     private MapManager mapManager;
     private Player player;
@@ -32,6 +52,19 @@ public class GameScreen implements Screen {
     private io.github.shaquibbai.deadlinedash.map.SceneTransition currentInsideTransition = null;
     private String triggeredTransitionName = "";
     private float transitionMessageTimer = 0f;
+
+    // REP / Progression System Components
+    private RepSystem repSystem;
+
+    // Backpack & Inventory System Components
+    private Backpack backpack;
+    private BackpackUI backpackUI;
+    private ItemConfirmationDialog itemConfirmationDialog;
+
+    private Texture backpackIconTexture;
+    private Texture whitePixel;
+    private final Rectangle backpackIconBounds = new Rectangle();
+    private final Vector3 hudMousePos = new Vector3();
 
     // Camera Zoom Config (0.25 <= camera.zoom <= 2.0)
     private static final float MIN_ZOOM = 2.f;
@@ -48,19 +81,22 @@ public class GameScreen implements Screen {
 
         initCameraAndViewport();
         initWorld();
+        initRepSystem();
+        initBackpackSystem();
     }
 
     private void initCameraAndViewport() {
         camera = new OrthographicCamera();
         viewport = new FitViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, camera);
-        // Default initial zoom setting, clamped between MIN_ZOOM (0.25) and MAX_ZOOM (2.0)
         camera.zoom = 1.0f;
         viewport.apply();
 
         hudCamera = new OrthographicCamera();
-        hudCamera.setToOrtho(false, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
-        debugFont = new com.badlogic.gdx.graphics.g2d.BitmapFont();
-        debugFont.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
+        hudViewport = new FitViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, hudCamera);
+        hudViewport.apply();
+
+        debugFont = new BitmapFont();
+        debugFont.setColor(Color.YELLOW);
         debugFont.getData().setScale(1.2f);
     }
 
@@ -69,18 +105,82 @@ public class GameScreen implements Screen {
 
         Vector2 spawnPos = mapManager.getDefaultSpawnPosition();
 
-        // Player width and height are independently configurable from world tile size (64x64)
         float playerWidth = 40f;
         float playerHeight = 60f;
-
-        // Temporarily increased movement speed for testing (2500 px/s)
         float moveSpeed = 2500f;
 
         player = new Player(spawnPos.x, spawnPos.y, playerWidth, playerHeight, moveSpeed);
 
-        // Center camera initially on spawn position
         camera.position.set(player.getCenterX(), player.getCenterY(), 0f);
         camera.update();
+    }
+
+    private void initRepSystem() {
+        repSystem = new RepSystem(); // Default starting REP = 20
+    }
+
+    private void initBackpackSystem() {
+        backpack = new Backpack();
+        backpackUI = new BackpackUI(backpack);
+        itemConfirmationDialog = new ItemConfirmationDialog(backpack);
+
+        // White pixel for UI drawing
+        Pixmap px = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        px.setColor(Color.WHITE);
+        px.fill();
+        whitePixel = new Texture(px);
+        px.dispose();
+
+        // Check if external backpack icon asset exists
+        if (Gdx.files.internal(AssetPaths.BACKPACK_ICON).exists()) {
+            backpackIconTexture = new Texture(Gdx.files.internal(AssetPaths.BACKPACK_ICON));
+        } else if (Gdx.files.internal("backpack_icon.png").exists()) {
+            backpackIconTexture = new Texture(Gdx.files.internal("backpack_icon.png"));
+        } else if (Gdx.files.internal("backpack.png").exists()) {
+            backpackIconTexture = new Texture(Gdx.files.internal("backpack.png"));
+        } else {
+            // Fallback pixel-art backpack texture (64x64)
+            Pixmap iconPixmap = new Pixmap(64, 64, Pixmap.Format.RGBA8888);
+            iconPixmap.setColor(0, 0, 0, 0);
+            iconPixmap.fill();
+
+            iconPixmap.setColor(new Color(0.18f, 0.10f, 0.05f, 1.0f));
+            iconPixmap.fillRectangle(13, 11, 38, 43);
+            iconPixmap.fillRectangle(10, 16, 44, 33);
+
+            iconPixmap.setColor(new Color(0.72f, 0.44f, 0.18f, 1.0f));
+            iconPixmap.fillRectangle(15, 13, 34, 39);
+            iconPixmap.fillRectangle(12, 18, 40, 29);
+
+            iconPixmap.setColor(new Color(0.50f, 0.26f, 0.10f, 1.0f));
+            iconPixmap.fillRectangle(14, 31, 36, 19);
+
+            iconPixmap.setColor(new Color(0.95f, 0.78f, 0.25f, 1.0f));
+            iconPixmap.fillRectangle(21, 28, 6, 10);
+            iconPixmap.fillRectangle(37, 28, 6, 10);
+            iconPixmap.fillRectangle(20, 50, 24, 4);
+
+            iconPixmap.setColor(new Color(0.62f, 0.35f, 0.14f, 1.0f));
+            iconPixmap.fillRectangle(18, 15, 28, 14);
+            iconPixmap.setColor(new Color(0.95f, 0.78f, 0.25f, 1.0f));
+            iconPixmap.fillRectangle(30, 19, 4, 5);
+
+            backpackIconTexture = new Texture(iconPixmap);
+            backpackIconTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+            iconPixmap.dispose();
+        }
+
+        // HUD Fonts
+        hudFont = new BitmapFont();
+        hudFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        hudFont.getData().setScale(1.0f);
+
+        hudTitleFont = new BitmapFont();
+        hudTitleFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        hudTitleFont.getData().setScale(1.35f);
+
+        // Define HUD icon bounds (Top Right: 64x64 at X=1170f, Y=575f)
+        backpackIconBounds.set(1170f, 575f, 64f, 64f);
     }
 
     @Override
@@ -89,29 +189,70 @@ public class GameScreen implements Screen {
 
     private float logTimer = 0f;
 
+    // =========================================================================
+    // TEMPORARY DEBUG ITEM PICKUP TRIGGER (FOR TESTING ONLY)
+    // Isolated debug trigger to test confirmation flow with Pen, Notebook, Controller, Money.
+    // Press 'E' in-game to cycle through test item pickups.
+    // =========================================================================
+    private int debugItemIndex = 0;
+    private final Item[] testItems = new Item[] {
+        new Item("Pen"),
+        new Item("Notebook"),
+        new Item("Controller"),
+        new Item("Money")
+    };
+    private final int[] testQuantities = new int[] { 10, 5, 3, 500 };
+
+    private void handleDebugItemPickupTrigger() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            if (!itemConfirmationDialog.isActive() && !backpackUI.isOpen()) {
+                Item testItem = testItems[debugItemIndex % testItems.length];
+                int qty = testQuantities[debugItemIndex % testQuantities.length];
+                debugItemIndex++;
+                itemConfirmationDialog.requestStoreItem(testItem, qty);
+            }
+        }
+    }
+
+    // =========================================================================
+    // TEMPORARY DEBUG REP TRIGGER (FOR TESTING ONLY)
+    // Isolated debug trigger to test REP system incrementing (+5 REP).
+    // Press 'R' in-game to add +5 REP.
+    // =========================================================================
+    private void handleDebugRepTrigger() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+            boolean isUiModalActive = itemConfirmationDialog.isActive() || backpackUI.isOpen();
+            if (!isUiModalActive) {
+                repSystem.addRep(5);
+            }
+        }
+    }
+    // =========================================================================
+
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
 
         // Camera Zoom Controls (M: Zoom IN, N: Zoom OUT)
-        if (com.badlogic.gdx.Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.M)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             camera.zoom -= ZOOM_STEP;
         }
-        if (com.badlogic.gdx.Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.N)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.N)) {
             camera.zoom += ZOOM_STEP;
         }
-        camera.zoom = com.badlogic.gdx.math.MathUtils.clamp(camera.zoom, MIN_ZOOM, MAX_ZOOM);
+        camera.zoom = MathUtils.clamp(camera.zoom, MIN_ZOOM, MAX_ZOOM);
 
-        boolean isF3Pressed = com.badlogic.gdx.Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.F3);
+        boolean isF3Pressed = Gdx.input.isKeyPressed(Input.Keys.F3);
+        boolean isUiModalActive = itemConfirmationDialog.isActive() || backpackUI.isOpen();
 
-        if (isF3Pressed) {
+        if (isF3Pressed && !isUiModalActive) {
             // Free Camera Debug Mode: WASD moves camera directly across map
             float camMoveX = 0f;
             float camMoveY = 0f;
-            if (com.badlogic.gdx.Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.W) || com.badlogic.gdx.Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.UP)) camMoveY += 1f;
-            if (com.badlogic.gdx.Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.S) || com.badlogic.gdx.Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.DOWN)) camMoveY -= 1f;
-            if (com.badlogic.gdx.Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.A) || com.badlogic.gdx.Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.LEFT)) camMoveX -= 1f;
-            if (com.badlogic.gdx.Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.D) || com.badlogic.gdx.Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.RIGHT)) camMoveX += 1f;
+            if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) camMoveY += 1f;
+            if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) camMoveY -= 1f;
+            if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) camMoveX -= 1f;
+            if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) camMoveX += 1f;
 
             if (camMoveX != 0f && camMoveY != 0f) {
                 camMoveX *= 0.7071f;
@@ -121,17 +262,20 @@ public class GameScreen implements Screen {
             float freeCamSpeed = 3500f;
             camera.position.x += camMoveX * freeCamSpeed * delta;
             camera.position.y += camMoveY * freeCamSpeed * delta;
-            player.update(delta, true, mapManager.getCollisionPolygons()); // Don't move player in F3 mode
+            player.update(delta, true, mapManager.getCollisionPolygons());
         } else {
-            // Normal Gameplay Mode: WASD moves player, camera follows player
-            player.update(delta, false, mapManager.getCollisionPolygons());
+            // Normal Gameplay Mode: WASD moves player (only when UI modals are inactive)
+            if (!isUiModalActive) {
+                player.update(delta, false, mapManager.getCollisionPolygons());
+            } else {
+                player.update(0f, false, mapManager.getCollisionPolygons()); // Freeze player while UI open
+            }
             camera.position.set(player.getCenterX(), player.getCenterY(), 0f);
         }
 
-        // 1. Transition detection (cleanly separated from transition actions)
+        // 1. Transition detection
         io.github.shaquibbai.deadlinedash.map.SceneTransition overlappingTransition = player.getOverlappingTransition(mapManager.getSceneTransitions());
         if (overlappingTransition != null && overlappingTransition != currentInsideTransition) {
-            // Edge-triggered: player just entered a new transition zone
             handleTransitionTriggered(overlappingTransition);
         }
         currentInsideTransition = overlappingTransition;
@@ -142,34 +286,75 @@ public class GameScreen implements Screen {
 
         camera.update();
 
+        // Calculate unprojected mouse position in strict HUD viewport coordinates [0..1280, 0..720]
+        hudMousePos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+        hudViewport.unproject(hudMousePos);
+
+        boolean justClicked = Gdx.input.justTouched();
+
+        // Process temporary debug item pickup key trigger ('E') and REP debug key trigger ('R')
+        handleDebugItemPickupTrigger();
+        handleDebugRepTrigger();
+
+        // Process HUD Backpack icon click (toggle backpack UI)
+        if (justClicked && backpackIconBounds.contains(hudMousePos.x, hudMousePos.y)) {
+            if (!itemConfirmationDialog.isActive()) {
+                backpackUI.toggle();
+            }
+        }
+
+        // ESC key closes Backpack UI if open
+        if (backpackUI.isOpen() && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            backpackUI.setOpen(false);
+        }
+
+        // Mouse wheel / arrow key scroll support for Backpack UI
+        if (backpackUI.isOpen()) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
+                backpackUI.scroll(-1f);
+            } else if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
+                backpackUI.scroll(1f);
+            }
+        }
+
+        // Update inventory components
+        itemConfirmationDialog.update(delta, hudMousePos, justClicked);
+        backpackUI.update(delta, hudMousePos, justClicked);
+
         // Terminal Diagnostic logging every 1.0 second
         logTimer += delta;
         if (logTimer >= 1.0f) {
             logTimer = 0f;
-            System.out.printf("[DIAGNOSTIC] Player: (%.1f, %.1f) | Cam: (%.1f, %.1f) | Dir: %s | F3_FreeCam: %b | Transition: %s%n",
-                player.getX(), player.getY(), camera.position.x, camera.position.y, player.getCurrentDirection(), isF3Pressed,
-                currentInsideTransition != null ? currentInsideTransition.getName() : "NONE");
+            System.out.printf("[DIAGNOSTIC] Player: (%.1f, %.1f) | Cam: (%.1f, %.1f) | Dir: %s | REP: %d | BackpackItems: %d%n",
+                player.getX(), player.getY(), camera.position.x, camera.position.y, player.getCurrentDirection(),
+                repSystem.getRep(), backpack.getDistinctItemCount());
         }
 
         // Render Tiled map layers
         mapManager.render(camera);
 
-        // Render entities (Player placeholder)
+        // Render entities (Player)
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         player.render(batch);
         batch.end();
 
-        // Render On-Screen Debug HUD
+        // Render HUD elements (REP Points HUD, Debug Text, Backpack Icon, Backpack UI, Centered Dialogs)
+        hudCamera.update();
         batch.setProjectionMatrix(hudCamera.combined);
         batch.begin();
+
+        // 1. Render REP Points HUD (Top Left)
+        renderRepHUD();
+
+        // 2. On-Screen Debug Info HUD (Left Side, positioned cleanly below REP)
         float margin = 20f;
-        float startY = VIRTUAL_HEIGHT - 20f;
+        float startY = VIRTUAL_HEIGHT - 65f;
         debugFont.draw(batch, String.format("PLAYER POS : X=%.1f, Y=%.1f [Tile X=%.0f, Y=%.0f]", player.getX(), player.getY(), player.getX() / 64f, player.getY() / 64f), margin, startY);
         debugFont.draw(batch, String.format("CAMERA POS : X=%.1f, Y=%.1f | ZOOM: %.2f (M: In, N: Out)", camera.position.x, camera.position.y, camera.zoom), margin, startY - 25f);
         debugFont.draw(batch, String.format("DIRECTION  : %s | SPEED: %.0f px/s", player.getCurrentDirection(), player.getMoveSpeed()), margin, startY - 50f);
         debugFont.draw(batch, String.format("MODE       : %s", isF3Pressed ? "FREE CAMERA MODE (WASD moves camera)" : "NORMAL MODE (WASD moves player)"), margin, startY - 75f);
-        debugFont.draw(batch, "HOLD [F3]  : Move camera independently to inspect campus map", margin, startY - 100f);
+        debugFont.draw(batch, "PRESS [E]  : [DEBUG] Test item pickup prompt | PRESS [R] : [DEBUG] +5 REP", margin, startY - 100f);
 
         String transitionStatus = "NONE";
         if (currentInsideTransition != null) {
@@ -181,17 +366,54 @@ public class GameScreen implements Screen {
 
         if (transitionMessageTimer > 0f || currentInsideTransition != null) {
             String activeName = currentInsideTransition != null ? currentInsideTransition.getName() : triggeredTransitionName;
-            debugFont.setColor(com.badlogic.gdx.graphics.Color.RED);
+            debugFont.setColor(Color.RED);
             debugFont.draw(batch, "TRANSITION TRIGGERED: " + activeName, VIRTUAL_WIDTH / 2f - 220f, VIRTUAL_HEIGHT - 40f);
-            debugFont.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
+            debugFont.setColor(Color.YELLOW);
         }
+
+        // 3. Render Gameplay HUD Backpack Icon (Top Right, Clean - No text labels or screen tinting)
+        renderBackpackHUD();
+
+        // 4. Render Centered Backpack UI Panel (if open)
+        backpackUI.render(batch, hudTitleFont, hudFont, whitePixel, hudMousePos);
+
+        // 5. Render Centered Item Storage Confirmation Dialog & Toast Notifications
+        itemConfirmationDialog.render(batch, hudTitleFont, hudFont, whitePixel, hudMousePos);
+
+        batch.setColor(Color.WHITE); // Ensure batch color state is cleanly reset
         batch.end();
     }
 
     /**
-     * 2. Action triggered upon entering a scene transition zone.
-     * Decoupled from detection logic to easily integrate actual map transitions in future phases.
+     * Renders top-left gameplay HUD displaying current REP points.
+     * Fixed in screen space [0..1280, 0..720].
+     * Layout: REP: 20
      */
+    private void renderRepHUD() {
+        float repX = 25f;
+        float repY = VIRTUAL_HEIGHT - 22f; // 698f (Top Left)
+
+        hudTitleFont.setColor(new Color(0.3f, 0.90f, 1.0f, 1.0f)); // Bright cyan accent
+        hudTitleFont.draw(batch, "REP: " + repSystem.getRep(), repX, repY);
+        hudTitleFont.setColor(Color.WHITE);
+    }
+
+    /**
+     * Renders top-right gameplay HUD containing solely the Backpack icon.
+     * Fixed in screen space [0..1280, 0..720].
+     * Clean, no text labels, no background hover highlights, no screen tinting.
+     */
+    private void renderBackpackHUD() {
+        float iconW = 64f;
+        float iconH = 64f;
+        float iconX = 1170f;
+        float iconY = 575f;
+
+        batch.setColor(Color.WHITE);
+        batch.draw(backpackIconTexture, iconX, iconY, iconW, iconH);
+        batch.setColor(Color.WHITE);
+    }
+
     private void handleTransitionTriggered(io.github.shaquibbai.deadlinedash.map.SceneTransition transition) {
         triggeredTransitionName = transition.getName();
         transitionMessageTimer = 3.0f;
@@ -202,7 +424,7 @@ public class GameScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, false);
-        hudCamera.setToOrtho(false, width, height);
+        hudViewport.update(width, height, true);
     }
 
     @Override
@@ -219,14 +441,12 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        if (mapManager != null) {
-            mapManager.dispose();
-        }
-        if (player != null) {
-            player.dispose();
-        }
-        if (debugFont != null) {
-            debugFont.dispose();
-        }
+        if (mapManager != null) mapManager.dispose();
+        if (player != null) player.dispose();
+        if (debugFont != null) debugFont.dispose();
+        if (hudFont != null) hudFont.dispose();
+        if (hudTitleFont != null) hudTitleFont.dispose();
+        if (backpackIconTexture != null) backpackIconTexture.dispose();
+        if (whitePixel != null) whitePixel.dispose();
     }
 }
