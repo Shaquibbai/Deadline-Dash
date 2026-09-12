@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="1584" height="528" tilewidth="64" tileheight="64" infinite="0" nextlayerid="16" nextobjectid="412">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="1584" height="528" tilewidth="64" tileheight="64" infinite="0" nextlayerid="17" nextobjectid="416">
  <tileset firstgid="1" name="roads" tilewidth="64" tileheight="64" tilecount="384" columns="24">
   <image source="../tilesets/roads.png" width="1536" height="1024"/>
  </tileset>
@@ -2291,7 +2291,7 @@
   <object id="234" name="CDS" x="5512" y="17248" width="2240" height="940"/>
   <object id="235" name="CDS" x="5512.12" y="16153.5" width="320.121" height="1119.21"/>
   <object id="236" name="Administrative" x="14975.8" y="16406.1" width="3842.42" height="1491.27"/>
-  <object id="237" name="Cafe" x="11504" y="13072" width="2320" height="3888"/>
+  <object id="237" name="Cafe" x="11504" y="13072" width="2304" height="3888"/>
   <object id="238" name="Cafe" x="13718.2" y="12806.1"/>
   <object id="240" name="Cafe" x="11521.1" y="17144" width="2308.85" height="756.121"/>
   <object id="241" name="Cafe" x="11508" y="16848" width="2244" height="328"/>
@@ -2430,6 +2430,18 @@
   <object id="364" name="AB1_to_AB1Inside" x="15680" y="19622" width="502" height="130"/>
   <object id="406" name="AB2_to_AB2Inside" x="15684" y="23702" width="398" height="148"/>
   <object id="407" name="CDS_to_CdsInside" x="7462.67" y="18180" width="234.667" height="98.6667"/>
-  <object id="408" name="Cafe_to_CafeInside" x="13744" y="16936" width="96" height="226"/>
+  <object id="408" name="Cafe_to_RightCafeInside" x="13738.1" y="15189.6" width="116" height="1484.3"/>
+  <object id="413" name="Cafe_to_LeftCafeInside" x="11470" y="16300" width="84" height="984"/>
+ </objectgroup>
+ <objectgroup id="16" name="PlayerSpawns">
+  <object id="412" name="PlayerSpawn_from_AB1_Lobby" x="15920" y="19482">
+   <point/>
+  </object>
+  <object id="414" name="PlayerSpawn_from_CafeInsideRight" x="13920" y="16286">
+   <point/>
+  </object>
+  <object id="415" name="PlayerSpawn_from_CafeInsideLeft" x="11372" y="16792">
+   <point/>
+  </object>
  </objectgroup>
 </map>

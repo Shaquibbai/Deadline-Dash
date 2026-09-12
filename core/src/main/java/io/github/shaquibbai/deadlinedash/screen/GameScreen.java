@@ -277,6 +277,7 @@ public class GameScreen implements Screen {
         io.github.shaquibbai.deadlinedash.map.SceneTransition overlappingTransition = player.getOverlappingTransition(mapManager.getSceneTransitions());
         if (overlappingTransition != null && overlappingTransition != currentInsideTransition) {
             handleTransitionTriggered(overlappingTransition);
+            overlappingTransition = player.getOverlappingTransition(mapManager.getSceneTransitions());
         }
         currentInsideTransition = overlappingTransition;
 
@@ -419,6 +420,29 @@ public class GameScreen implements Screen {
         transitionMessageTimer = 3.0f;
         System.out.printf("[TRANSITION] TRANSITION TRIGGERED: %s at player pos (%.1f, %.1f)%n",
             transition.getName(), player.getX(), player.getY());
+
+        if (transition.hasDestination()) {
+            String targetMap = transition.getTargetMapPath();
+            String targetSpawn = transition.getTargetSpawnName();
+            System.out.printf("[TRANSITION] Loading destination map: %s with spawn target: %s%n", targetMap, targetSpawn);
+
+            mapManager.loadMap(targetMap, batch);
+
+            Vector2 spawnPos = mapManager.getSpawnPosition("PlayerSpawns", targetSpawn);
+            if (spawnPos != null) {
+                player.setPosition(spawnPos.x, spawnPos.y);
+                System.out.printf("[TRANSITION] Placed player at spawn '%s': (%.1f, %.1f)%n", targetSpawn, spawnPos.x, spawnPos.y);
+            } else {
+                System.err.printf("[TRANSITION] ERROR: Spawn '%s' not found in '%s'. Leaving player at (%.1f, %.1f)%n",
+                    targetSpawn, targetMap, player.getX(), player.getY());
+            }
+
+            // Immediately update camera position to follow newly positioned player
+            camera.position.set(player.getCenterX(), player.getCenterY(), 0f);
+            camera.update();
+
+            System.out.printf("[TRANSITION] Successfully completed transition to map: %s%n", targetMap);
+        }
     }
 
     @Override

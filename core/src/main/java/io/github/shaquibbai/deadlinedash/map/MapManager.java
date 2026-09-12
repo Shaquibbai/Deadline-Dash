@@ -14,10 +14,13 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
+import io.github.shaquibbai.deadlinedash.assets.AssetPaths;
+
 /**
- * Manages Tiled map loading, rendering, and infinite map bounds calculation.
+ * Manages Tiled map loading, rendering, collision extraction, and scene transitions.
  */
 public class MapManager {
+    private String currentMapPath;
     private TiledMap tiledMap;
     private OrthogonalTiledMapRenderer mapRenderer;
 
@@ -34,6 +37,7 @@ public class MapManager {
     }
 
     public void loadMap(String mapPath, SpriteBatch batch) {
+        this.currentMapPath = mapPath;
         if (tiledMap != null) {
             tiledMap.dispose();
         }
@@ -128,25 +132,141 @@ public class MapManager {
                 com.badlogic.gdx.math.Polygon polygon = createPolygonFromMapObject(object);
                 if (polygon != null) {
                     String name = object.getName();
-                    sceneTransitions.add(new SceneTransition(name, polygon));
+                    String targetMapPath = null;
+                    String targetSpawnName = null;
+
+                    // Check custom properties first if defined in map editor
+                    if (object.getProperties().containsKey("targetMap")) {
+                        targetMapPath = object.getProperties().get("targetMap", String.class);
+                    }
+                    if (object.getProperties().containsKey("targetSpawn")) {
+                        targetSpawnName = object.getProperties().get("targetSpawn", String.class);
+                    }
+
+                    // Standard transition registry mapping by identifier
+                    if (targetMapPath == null && name != null) {
+                        switch (name) {
+                            case "AB1_to_AB1Inside":
+                                targetMapPath = AssetPaths.MAP_AB1_LOBBY;
+                                targetSpawnName = "PlayerSpawn_from_AB1";
+                                break;
+                            case "AB1_Lobby_to_AB1":
+                                targetMapPath = AssetPaths.MAP_IUT_CAMPUS;
+                                targetSpawnName = "PlayerSpawn_from_AB1_Lobby";
+                                break;
+                            case "AB1_Lobby_to_AB1_Class1":
+                                targetMapPath = AssetPaths.MAP_AB1_CLASS1;
+                                targetSpawnName = "PlayerSpawn_from_AB1_Lobby";
+                                break;
+                            case "AB1_Class1_to_AB1_Lobby":
+                                targetMapPath = AssetPaths.MAP_AB1_LOBBY;
+                                targetSpawnName = "PlayerSpawn_from_AB1_Class1";
+                                break;
+                            case "Cafe_to_CafeInside":
+                                targetMapPath = AssetPaths.MAP_CAFE_INSIDE;
+                                targetSpawnName = "PlayerSpawn_from_CafeRight";
+                                break;
+                            case "Cafe_to_LeftCafeInside":
+                                targetMapPath = AssetPaths.MAP_CAFE_INSIDE;
+                                targetSpawnName = "PlayerSpawn_from_CafeLeft";
+                                break;
+                            case "Cafe_to_RightCafeInside":
+                                targetMapPath = AssetPaths.MAP_CAFE_INSIDE;
+                                targetSpawnName = "PlayerSpawn_from_CafeRight";
+                                break;
+                            case "CafeInsideLeft_to_CafeLeft":
+                                targetMapPath = AssetPaths.MAP_IUT_CAMPUS;
+                                targetSpawnName = "PlayerSpawn_from_CafeInsideLeft";
+                                break;
+                            case "CafeInsideRight_to_CafeRight":
+                                targetMapPath = AssetPaths.MAP_IUT_CAMPUS;
+                                targetSpawnName = "PlayerSpawn_from_CafeInsideRight";
+                                break;
+                            case "AB2_to_AB2Inside":
+                                targetMapPath = AssetPaths.MAP_AB2_LOBBY;
+                                targetSpawnName = "PlayerSpawn";
+                                break;
+                            case "CDS_to_CdsInside":
+                            default:
+                                // CDS and unmapped transitions keep detection behavior only
+                                targetMapPath = null;
+                                targetSpawnName = null;
+                                break;
+                        }
+                    }
+
+                    sceneTransitions.add(new SceneTransition(name, polygon, targetMapPath, targetSpawnName));
                 }
             }
         }
     }
 
     /**
-     * Sets the world bounds to the full 1024x528 tile campus envelope
-     * (including intentional empty spaces for future building lots),
-     * and sets default spawn position at the northern campus entrance road hub (5120, 32000).
+     * Finds a spawn point in the currently loaded map from the specified layer and object name.
+     * Fails gracefully and returns null if layer or spawn point does not exist.
+     */
+    public Vector2 getSpawnPosition(String layerName, String objectName) {
+        if (tiledMap == null) {
+            System.err.printf("[MAP] Cannot find spawn: tiledMap is null%n");
+            return null;
+        }
+
+        String searchLayer = layerName != null ? layerName : "PlayerSpawns";
+        String searchTarget = objectName;
+        if (searchTarget == null) {
+            System.err.printf("[MAP] Cannot find spawn: objectName is null in map '%s'%n", currentMapPath);
+            return null;
+        }
+
+        MapLayer spawnLayer = tiledMap.getLayers().get(searchLayer);
+        if (spawnLayer == null) {
+            System.err.printf("[MAP] Spawn layer '%s' not found in map '%s'%n", searchLayer, currentMapPath);
+            return null;
+        }
+
+        for (MapObject object : spawnLayer.getObjects()) {
+            if (searchTarget.equals(object.getName())) {
+                if (object instanceof com.badlogic.gdx.maps.objects.PointMapObject pointObject) {
+                    return new Vector2(pointObject.getPoint().x, pointObject.getPoint().y);
+                } else if (object instanceof com.badlogic.gdx.maps.objects.RectangleMapObject rectObject) {
+                    Rectangle rect = rectObject.getRectangle();
+                    return new Vector2(rect.x, rect.y);
+                } else if (object.getProperties().containsKey("x") && object.getProperties().containsKey("y")) {
+                    Object xObj = object.getProperties().get("x");
+                    Object yObj = object.getProperties().get("y");
+                    float x = xObj instanceof Number ? ((Number) xObj).floatValue() : Float.parseFloat(xObj.toString());
+                    float y = yObj instanceof Number ? ((Number) yObj).floatValue() : Float.parseFloat(yObj.toString());
+                    return new Vector2(x, y);
+                }
+            }
+        }
+
+        System.err.printf("[MAP] Spawn object '%s' not found in layer '%s' of map '%s'%n", searchTarget, searchLayer, currentMapPath);
+        return null;
+    }
+
+    /**
+     * Sets the world bounds dynamically based on map dimensions,
+     * and sets default campus entrance spawn position.
      */
     private void calculateWorldBounds() {
-        // Full 1024x528 campus envelope in 64x64 tiles
-        float minX = 0.0f;
-        float maxX = 65536.0f; // 1024 tiles * 64px
-        float minY = 0.0f;
-        float maxY = 33792.0f; // 528 tiles * 64px
+        if (tiledMap != null && tiledMap.getProperties().containsKey("width")) {
+            int mapWidth = tiledMap.getProperties().get("width", Integer.class);
+            int mapHeight = tiledMap.getProperties().get("height", Integer.class);
+            tileWidth = tiledMap.getProperties().get("tilewidth", 64, Integer.class);
+            tileHeight = tiledMap.getProperties().get("tileheight", 64, Integer.class);
 
-        worldBounds.set(minX, minY, maxX - minX, maxY - minY);
+            float totalWidth = mapWidth * tileWidth;
+            float totalHeight = mapHeight * tileHeight;
+            worldBounds.set(0.0f, 0.0f, totalWidth, totalHeight);
+        } else {
+            // Fallback 1024x528 campus envelope in 64x64 tiles
+            float minX = 0.0f;
+            float maxX = 65536.0f;
+            float minY = 0.0f;
+            float maxY = 33792.0f;
+            worldBounds.set(minX, minY, maxX - minX, maxY - minY);
+        }
 
         // Initial spawn coordinate at campus entrance road hub
         defaultSpawnPosition.set(5120.0f, 32000.0f);
@@ -185,6 +305,10 @@ public class MapManager {
 
     public int getTileHeight() {
         return tileHeight;
+    }
+
+    public String getCurrentMapPath() {
+        return currentMapPath;
     }
 
     public void dispose() {
