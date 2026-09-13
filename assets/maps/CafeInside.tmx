@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="64" tileheight="64" infinite="0" nextlayerid="5" nextobjectid="16">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="64" tileheight="64" infinite="0" nextlayerid="8" nextobjectid="17">
  <tileset firstgid="1" source="../tilesets/cafe.tsx"/>
+ <objectgroup id="7" name="NPCs"/>
  <layer id="1" name="Tile Layer 1" width="30" height="20">
   <data encoding="csv">
 2684354873,1610612832,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612880,1610612904,1610612928,1610612952,1610612832,1610612856,3221225785,

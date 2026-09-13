@@ -339,9 +339,10 @@ public class GameScreen implements Screen {
         // Render Tiled map layers
         mapManager.render(camera);
 
-        // Render entities (Player)
+        // Render entities (NPCs & Player)
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
+        mapManager.renderNPCs(batch);
         player.render(batch);
         batch.end();
 

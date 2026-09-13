@@ -15,6 +15,10 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 import io.github.shaquibbai.deadlinedash.assets.AssetPaths;
+import io.github.shaquibbai.deadlinedash.npc.NPC;
+import io.github.shaquibbai.deadlinedash.npc.NPCConfig;
+import io.github.shaquibbai.deadlinedash.npc.NPCModelResolver;
+import io.github.shaquibbai.deadlinedash.npc.StaticNPCVisual;
 
 /**
  * Manages Tiled map loading, rendering, collision extraction, and scene transitions.
@@ -31,6 +35,7 @@ public class MapManager {
     private final Vector2 defaultSpawnPosition = new Vector2();
     private final com.badlogic.gdx.utils.Array<com.badlogic.gdx.math.Polygon> collisionPolygons = new com.badlogic.gdx.utils.Array<>();
     private final com.badlogic.gdx.utils.Array<SceneTransition> sceneTransitions = new com.badlogic.gdx.utils.Array<>();
+    private final com.badlogic.gdx.utils.Array<NPC> npcs = new com.badlogic.gdx.utils.Array<>();
 
     public MapManager(String mapPath, SpriteBatch batch) {
         loadMap(mapPath, batch);
@@ -74,6 +79,7 @@ public class MapManager {
         calculateWorldBounds();
         loadCollisionObjects();
         loadSceneTransitions();
+        loadNPCs();
     }
 
     private com.badlogic.gdx.math.Polygon createPolygonFromMapObject(MapObject object) {
@@ -201,6 +207,106 @@ public class MapManager {
         }
     }
 
+    private void loadNPCs() {
+        disposeNPCs();
+        if (tiledMap == null) return;
+
+        // Try standard NPC object layers
+        MapLayer npcLayer = tiledMap.getLayers().get("NPCs");
+        if (npcLayer == null) {
+            npcLayer = tiledMap.getLayers().get("NPC");
+        }
+
+        if (npcLayer != null) {
+            for (MapObject object : npcLayer.getObjects()) {
+                parseAndAddNPC(object);
+            }
+        } else {
+            // Check other object layers for objects of type NPC or containing model property
+            for (MapLayer layer : tiledMap.getLayers()) {
+                if (layer instanceof TiledMapTileLayer) continue;
+                for (MapObject object : layer.getObjects()) {
+                    if ("NPC".equalsIgnoreCase(object.getName()) ||
+                        "NPC".equalsIgnoreCase(object.getProperties().get("type", String.class)) ||
+                        object.getProperties().containsKey("model")) {
+                        parseAndAddNPC(object);
+                    }
+                }
+            }
+        }
+    }
+
+    private void parseAndAddNPC(MapObject object) {
+        float x = 0f;
+        float y = 0f;
+        float width = 40f;
+        float height = 60f;
+
+        if (object instanceof com.badlogic.gdx.maps.objects.RectangleMapObject rectObject) {
+            Rectangle rect = rectObject.getRectangle();
+            x = rect.x;
+            y = rect.y;
+            width = rect.width;
+            height = rect.height;
+        } else if (object instanceof com.badlogic.gdx.maps.objects.PointMapObject pointObject) {
+            x = pointObject.getPoint().x;
+            y = pointObject.getPoint().y;
+        } else if (object.getProperties().containsKey("x") && object.getProperties().containsKey("y")) {
+            Object xObj = object.getProperties().get("x");
+            Object yObj = object.getProperties().get("y");
+            x = xObj instanceof Number ? ((Number) xObj).floatValue() : Float.parseFloat(xObj.toString());
+            y = yObj instanceof Number ? ((Number) yObj).floatValue() : Float.parseFloat(yObj.toString());
+            if (object.getProperties().containsKey("width")) {
+                Object wObj = object.getProperties().get("width");
+                width = wObj instanceof Number ? ((Number) wObj).floatValue() : Float.parseFloat(wObj.toString());
+            }
+            if (object.getProperties().containsKey("height")) {
+                Object hObj = object.getProperties().get("height");
+                height = hObj instanceof Number ? ((Number) hObj).floatValue() : Float.parseFloat(hObj.toString());
+            }
+        }
+
+        String model = object.getProperties().get("model", String.class);
+        String name = object.getProperties().get("name", String.class);
+        if (name == null || name.trim().isEmpty()) {
+            name = object.getName();
+        }
+        String dialogue = object.getProperties().get("dialogue", "NONE", String.class);
+        String quest = object.getProperties().get("quest", "NONE", String.class);
+
+        boolean idleAnimation = false;
+        Object idleProp = object.getProperties().get("idleAnimation");
+        if (idleProp instanceof Boolean b) idleAnimation = b;
+        else if (idleProp instanceof String s) idleAnimation = Boolean.parseBoolean(s);
+
+        boolean interactable = false;
+        Object interactProp = object.getProperties().get("interactable");
+        if (interactProp instanceof Boolean b) interactable = b;
+        else if (interactProp instanceof String s) interactable = Boolean.parseBoolean(s);
+
+        float interactionRange = 0f;
+        Object rangeProp = object.getProperties().get("interactionRange");
+        if (rangeProp instanceof Number num) interactionRange = num.floatValue();
+        else if (rangeProp instanceof String s) {
+            try { interactionRange = Float.parseFloat(s); } catch (NumberFormatException ignored) {}
+        }
+
+        NPCConfig config = new NPCConfig(name, model, dialogue, quest, idleAnimation, interactable, interactionRange);
+        String assetPath = NPCModelResolver.resolveAndVerify(model);
+        StaticNPCVisual visual = new StaticNPCVisual(assetPath);
+        NPC npc = new NPC(config, x, y, width, height, visual);
+        npcs.add(npc);
+        System.out.printf("[NPC] Loaded NPC '%s' (model: '%s') at (%.1f, %.1f) in map '%s'%n",
+            config.getName(), config.getModel(), x, y, currentMapPath);
+    }
+
+    private void disposeNPCs() {
+        for (NPC npc : npcs) {
+            npc.dispose();
+        }
+        npcs.clear();
+    }
+
     /**
      * Finds a spawn point in the currently loaded map from the specified layer and object name.
      * Fails gracefully and returns null if layer or spawn point does not exist.
@@ -311,7 +417,18 @@ public class MapManager {
         return currentMapPath;
     }
 
+    public com.badlogic.gdx.utils.Array<NPC> getNpcs() {
+        return npcs;
+    }
+
+    public void renderNPCs(SpriteBatch batch) {
+        for (NPC npc : npcs) {
+            npc.render(batch);
+        }
+    }
+
     public void dispose() {
+        disposeNPCs();
         if (mapRenderer != null) {
             mapRenderer.dispose();
         }
