@@ -1,0 +1,92 @@
+package io.github.shaquibbai.deadlinedash.dialogue;
+
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.Align;
+
+/**
+ * Screen-space HUD renderer for active NPC dialogues.
+ * Renders an anchored bottom dialog panel, speaker name badge, wrapped dialogue lines,
+ * and an animated [F] progression prompt.
+ */
+public class DialogueUI {
+    // Screen-space dimensions (Viewport: 1280 x 720)
+    private static final float PANEL_W = 1040f;
+    private static final float PANEL_H = 175f;
+    private static final float PANEL_X = (1280f - PANEL_W) / 2f; // 120f
+    private static final float PANEL_Y = 28f;
+
+    private static final float HEADER_H = 38f;
+    private static final float PADDING_X = 28f;
+
+    private final GlyphLayout layout = new GlyphLayout();
+    private float animTimer = 0f;
+
+    public void update(float delta) {
+        animTimer += delta;
+    }
+
+    /**
+     * Renders the dialogue UI if dialogue is active.
+     */
+    public void render(SpriteBatch batch, BitmapFont speakerFont, BitmapFont bodyFont, Texture whitePixel, DialogueManager dialogueManager) {
+        if (dialogueManager == null || !dialogueManager.isActive()) {
+            return;
+        }
+
+        // 1. Panel Container Background
+        batch.setColor(0.09f, 0.11f, 0.16f, 0.95f);
+        batch.draw(whitePixel, PANEL_X, PANEL_Y, PANEL_W, PANEL_H);
+
+        // Header Background Bar
+        batch.setColor(0.14f, 0.18f, 0.25f, 0.98f);
+        batch.draw(whitePixel, PANEL_X, PANEL_Y + PANEL_H - HEADER_H, PANEL_W, HEADER_H);
+
+        // Top Golden Accent Strip
+        batch.setColor(0.95f, 0.78f, 0.25f, 1.0f);
+        batch.draw(whitePixel, PANEL_X, PANEL_Y + PANEL_H - 3f, PANEL_W, 3f);
+
+        // Outer Border
+        batch.setColor(0.30f, 0.45f, 0.65f, 0.90f);
+        batch.draw(whitePixel, PANEL_X, PANEL_Y, PANEL_W, 2);
+        batch.draw(whitePixel, PANEL_X, PANEL_Y + PANEL_H - 2, PANEL_W, 2);
+        batch.draw(whitePixel, PANEL_X, PANEL_Y, 2, PANEL_H);
+        batch.draw(whitePixel, PANEL_X + PANEL_W - 2, PANEL_Y, 2, PANEL_H);
+
+        // Header Separator Line
+        batch.setColor(0.25f, 0.35f, 0.50f, 0.85f);
+        batch.draw(whitePixel, PANEL_X, PANEL_Y + PANEL_H - HEADER_H, PANEL_W, 1);
+
+        // 2. Speaker Name
+        String speaker = dialogueManager.getCurrentSpeaker();
+        if (speaker != null && !speaker.isEmpty()) {
+            speakerFont.setColor(new Color(1.0f, 0.85f, 0.30f, 1.0f));
+            speakerFont.draw(batch, speaker, PANEL_X + PADDING_X, PANEL_Y + PANEL_H - 12f);
+        }
+
+        // 3. Dialogue Line (Wrapped)
+        String line = dialogueManager.getCurrentLine();
+        if (line != null && !line.isEmpty()) {
+            float textWrapWidth = PANEL_W - (PADDING_X * 2f);
+            bodyFont.setColor(new Color(0.95f, 0.95f, 0.98f, 1.0f));
+            layout.setText(bodyFont, line, bodyFont.getColor(), textWrapWidth, Align.left, true);
+            bodyFont.draw(batch, layout, PANEL_X + PADDING_X, PANEL_Y + PANEL_H - HEADER_H - 18f);
+        }
+
+        // 4. Prompt Indicator [F] NEXT ▶ / [F] CLOSE ▶ (Bottom Right)
+        float pulse = (float) Math.sin(animTimer * 6f) * 0.25f + 0.75f;
+        bodyFont.setColor(0.70f, 0.85f, 1.0f, pulse);
+
+        String promptText = dialogueManager.isLastLine() ? "[F] CLOSE ▶" : "[F] NEXT ▶";
+        layout.setText(bodyFont, promptText);
+        bodyFont.draw(batch, promptText, PANEL_X + PANEL_W - layout.width - 24f, PANEL_Y + 22f);
+
+        batch.setColor(Color.WHITE);
+    }
+
+    public void dispose() {
+    }
+}

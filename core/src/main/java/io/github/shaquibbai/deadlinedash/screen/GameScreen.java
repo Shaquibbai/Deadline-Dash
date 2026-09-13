@@ -19,12 +19,15 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.shaquibbai.deadlinedash.DeadlineDash;
 import io.github.shaquibbai.deadlinedash.assets.AssetPaths;
+import io.github.shaquibbai.deadlinedash.dialogue.DialogueManager;
+import io.github.shaquibbai.deadlinedash.dialogue.DialogueUI;
 import io.github.shaquibbai.deadlinedash.entity.Player;
 import io.github.shaquibbai.deadlinedash.inventory.Backpack;
 import io.github.shaquibbai.deadlinedash.inventory.BackpackUI;
 import io.github.shaquibbai.deadlinedash.inventory.Item;
 import io.github.shaquibbai.deadlinedash.inventory.ItemConfirmationDialog;
 import io.github.shaquibbai.deadlinedash.map.MapManager;
+import io.github.shaquibbai.deadlinedash.npc.NPC;
 import io.github.shaquibbai.deadlinedash.rep.RepSystem;
 
 /**
@@ -52,6 +55,10 @@ public class GameScreen implements Screen {
     private io.github.shaquibbai.deadlinedash.map.SceneTransition currentInsideTransition = null;
     private String triggeredTransitionName = "";
     private float transitionMessageTimer = 0f;
+
+    // Dialogue System Components
+    private DialogueManager dialogueManager;
+    private DialogueUI dialogueUI;
 
     // REP / Progression System Components
     private RepSystem repSystem;
@@ -83,6 +90,12 @@ public class GameScreen implements Screen {
         initWorld();
         initRepSystem();
         initBackpackSystem();
+        initDialogueSystem();
+    }
+
+    private void initDialogueSystem() {
+        dialogueManager = new DialogueManager();
+        dialogueUI = new DialogueUI();
     }
 
     private void initCameraAndViewport() {
@@ -233,6 +246,9 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
 
+        // Update Dialogue UI animations
+        dialogueUI.update(delta);
+
         // Camera Zoom Controls (M: Zoom IN, N: Zoom OUT)
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             camera.zoom -= ZOOM_STEP;
@@ -243,7 +259,7 @@ public class GameScreen implements Screen {
         camera.zoom = MathUtils.clamp(camera.zoom, MIN_ZOOM, MAX_ZOOM);
 
         boolean isF3Pressed = Gdx.input.isKeyPressed(Input.Keys.F3);
-        boolean isUiModalActive = itemConfirmationDialog.isActive() || backpackUI.isOpen();
+        boolean isUiModalActive = itemConfirmationDialog.isActive() || backpackUI.isOpen() || dialogueManager.isActive();
 
         if (isF3Pressed && !isUiModalActive) {
             // Free Camera Debug Mode: WASD moves camera directly across map
@@ -297,16 +313,21 @@ public class GameScreen implements Screen {
         handleDebugItemPickupTrigger();
         handleDebugRepTrigger();
 
+        // Process NPC Interaction and Dialogue Progression ('F')
+        handleDialogueInput();
+
         // Process HUD Backpack icon click (toggle backpack UI)
         if (justClicked && backpackIconBounds.contains(hudMousePos.x, hudMousePos.y)) {
-            if (!itemConfirmationDialog.isActive()) {
+            if (!itemConfirmationDialog.isActive() && !dialogueManager.isActive()) {
                 backpackUI.toggle();
             }
         }
 
-        // ESC key: close backpack UI if open, otherwise return to Start Menu (TitleScreen)
+        // ESC key: close active dialogue / close backpack UI / return to Start Menu (TitleScreen)
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            if (backpackUI.isOpen()) {
+            if (dialogueManager.isActive()) {
+                dialogueManager.endDialogue();
+            } else if (backpackUI.isOpen()) {
                 backpackUI.setOpen(false);
             } else {
                 returnToTitleScreen();
@@ -346,7 +367,7 @@ public class GameScreen implements Screen {
         player.render(batch);
         batch.end();
 
-        // Render HUD elements (REP Points HUD, Debug Text, Backpack Icon, Backpack UI, Centered Dialogs)
+        // Render HUD elements (REP Points HUD, Debug Text, Backpack Icon, Backpack UI, Centered Dialogs, Dialogue UI)
         hudCamera.update();
         batch.setProjectionMatrix(hudCamera.combined);
         batch.begin();
@@ -361,7 +382,7 @@ public class GameScreen implements Screen {
         debugFont.draw(batch, String.format("CAMERA POS : X=%.1f, Y=%.1f | ZOOM: %.2f (M: In, N: Out)", camera.position.x, camera.position.y, camera.zoom), margin, startY - 25f);
         debugFont.draw(batch, String.format("DIRECTION  : %s | SPEED: %.0f px/s", player.getCurrentDirection(), player.getMoveSpeed()), margin, startY - 50f);
         debugFont.draw(batch, String.format("MODE       : %s", isF3Pressed ? "FREE CAMERA MODE (WASD moves camera)" : "NORMAL MODE (WASD moves player)"), margin, startY - 75f);
-        debugFont.draw(batch, "PRESS [E]  : [DEBUG] Test item pickup prompt | PRESS [R] : [DEBUG] +5 REP", margin, startY - 100f);
+        debugFont.draw(batch, "PRESS [F]  : Interact with NPC / Advance Dialogue | [E] : Test item pickup | [R] : +5 REP", margin, startY - 100f);
 
         String transitionStatus = "NONE";
         if (currentInsideTransition != null) {
@@ -386,6 +407,11 @@ public class GameScreen implements Screen {
 
         // 5. Render Centered Item Storage Confirmation Dialog & Toast Notifications
         itemConfirmationDialog.render(batch, hudTitleFont, hudFont, whitePixel, hudMousePos);
+
+        // 6. Render Bottom Anchored Dialogue UI Box (if dialogue active)
+        if (dialogueManager.isActive()) {
+            dialogueUI.render(batch, hudTitleFont, hudFont, whitePixel, dialogueManager);
+        }
 
         batch.setColor(Color.WHITE); // Ensure batch color state is cleanly reset
         batch.end();
@@ -451,6 +477,54 @@ public class GameScreen implements Screen {
         }
     }
 
+    private void handleDialogueInput() {
+        boolean fJustPressed = Gdx.input.isKeyJustPressed(Input.Keys.F);
+        if (dialogueManager.isActive()) {
+            if (fJustPressed) {
+                dialogueManager.advanceDialogue();
+            }
+        } else if (!itemConfirmationDialog.isActive() && !backpackUI.isOpen()) {
+            if (fJustPressed) {
+                NPC closestNpc = findClosestInteractableNPC();
+                if (closestNpc != null) {
+                    dialogueManager.startDialogue(closestNpc);
+                }
+            }
+        }
+    }
+
+    private NPC findClosestInteractableNPC() {
+        NPC closest = null;
+        float minDistanceSq = Float.MAX_VALUE;
+
+        float playerCenterX = player.getCenterX();
+        float playerCenterY = player.getCenterY();
+
+        for (NPC npc : mapManager.getNpcs()) {
+            if (!npc.getConfig().isInteractable()) {
+                continue;
+            }
+            String dialogue = npc.getConfig().getDialogue();
+            if (dialogue == null || dialogue.trim().isEmpty() || "NONE".equalsIgnoreCase(dialogue.trim())) {
+                continue;
+            }
+
+            float npcCenterX = npc.getCenterX();
+            float npcCenterY = npc.getCenterY();
+
+            float dx = playerCenterX - npcCenterX;
+            float dy = playerCenterY - npcCenterY;
+            float distSq = dx * dx + dy * dy;
+
+            float maxRange = npc.getConfig().getInteractionRange();
+            if (distSq <= maxRange * maxRange && distSq < minDistanceSq) {
+                minDistanceSq = distSq;
+                closest = npc;
+            }
+        }
+        return closest;
+    }
+
     private void returnToTitleScreen() {
         game.setScreen(new TitleScreen(game));
         dispose();
@@ -483,5 +557,6 @@ public class GameScreen implements Screen {
         if (hudTitleFont != null) hudTitleFont.dispose();
         if (backpackIconTexture != null) backpackIconTexture.dispose();
         if (whitePixel != null) whitePixel.dispose();
+        if (dialogueUI != null) dialogueUI.dispose();
     }
 }

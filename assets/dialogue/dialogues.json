@@ -1,0 +1,16 @@
+{
+  "milu_intro": {
+    "lines": [
+      "Hello.",
+      "Have you seen my notebook?",
+      "I need it before my next class."
+    ]
+  },
+
+  "guard_warning": {
+    "lines": [
+      "Are you a residential student?",
+      "If not, then please don't try to enter."
+    ]
+  }
+}
