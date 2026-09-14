@@ -1,16 +1,51 @@
 {
   "milu_intro": {
     "lines": [
-      "Hello.",
-      "Have you seen my notebook?",
-      "I need it before my next class."
+      {
+        "speaker": "npc",
+        "text": "How many did you finish?"
+      },
+      {
+        "speaker": "player",
+        "text": "2 sir."
+      },
+      {
+        "speaker": "npc",
+        "text": "Okay. Explain this one. Why are you sorting by start time?"
+      },
+      {
+        "speaker": "player",
+        "text": "I copied, sir."
+      },
+      {
+        "speaker": "npc",
+        "text": "Wow. At least learn how it works. What is even the point of this lab if you copy from others?"
+      },
+      {
+        "speaker": "npc",
+        "text": "--then he wasted 6-7 minutes of your life--"
+      }
     ]
   },
 
   "guard_warning": {
     "lines": [
-      "Are you a residential student?",
-      "If not, then please don't try to enter."
+      {
+        "speaker": "npc",
+        "text": "Are you a res student?"
+      },
+      {
+        "speaker": "player",
+        "text": "Yesn't"
+      },
+      {
+        "speaker": "npc",
+        "text": "Then don't try to sneak in please"
+      },
+      {
+        "speaker": "player",
+        "text": "SNEAK AROUND!!! How could I?"
+      }
     ]
   }
 }

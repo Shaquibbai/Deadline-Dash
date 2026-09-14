@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * State manager and data registry for in-game dialogues.
  * Handles loading dialogue data, initiating conversations with NPCs, tracking
- * the current line state, and advancing or ending dialogues.
+ * the current line state across NPC and player speakers, and advancing or ending dialogues.
  */
 public class DialogueManager {
     private static final String DEFAULT_DIALOGUES_PATH = "dialogue/dialogues.json";
@@ -67,6 +67,7 @@ public class DialogueManager {
 
     /**
      * Parses JSON string content and populates the dialogue registry.
+     * Supports line objects with "speaker" and "text" fields as well as plain string fallbacks.
      */
     public void loadDialoguesFromString(String jsonContent) {
         if (jsonContent == null || jsonContent.trim().isEmpty()) {
@@ -80,11 +81,17 @@ public class DialogueManager {
 
             for (JsonValue entry = root.child; entry != null; entry = entry.next) {
                 String id = entry.name;
-                List<String> lines = new ArrayList<>();
+                List<DialogueLine> lines = new ArrayList<>();
                 JsonValue linesArray = entry.get("lines");
                 if (linesArray != null && linesArray.isArray()) {
                     for (JsonValue lineVal = linesArray.child; lineVal != null; lineVal = lineVal.next) {
-                        lines.add(lineVal.asString());
+                        if (lineVal.isObject()) {
+                            String speakerStr = lineVal.getString("speaker", "npc");
+                            String textStr = lineVal.getString("text", "");
+                            lines.add(new DialogueLine(speakerStr, textStr));
+                        } else if (lineVal.isString()) {
+                            lines.add(new DialogueLine(DialogueSpeaker.NPC, lineVal.asString()));
+                        }
                     }
                 }
                 dialogues.put(id, new Dialogue(id, lines));
@@ -161,18 +168,44 @@ public class DialogueManager {
         return active;
     }
 
+    /**
+     * Returns the name of the active speaker.
+     * Displays the NPC's Tiled name for NPC lines, and "Player" for player lines.
+     */
     public String getCurrentSpeaker() {
+        if (!active || currentDialogue == null) {
+            return "";
+        }
+        DialogueLine line = currentDialogue.getLine(currentLineIndex);
+        if (line != null && line.isPlayer()) {
+            return "Player";
+        }
         if (currentNpc != null) {
             return currentNpc.getName();
         }
         return "";
     }
 
+    public DialogueSpeaker getCurrentSpeakerType() {
+        if (!active || currentDialogue == null) {
+            return DialogueSpeaker.NPC;
+        }
+        DialogueLine line = currentDialogue.getLine(currentLineIndex);
+        return line != null ? line.getSpeaker() : DialogueSpeaker.NPC;
+    }
+
     public String getCurrentLine() {
+        if (active && currentDialogue != null) {
+            return currentDialogue.getText(currentLineIndex);
+        }
+        return "";
+    }
+
+    public DialogueLine getCurrentDialogueLine() {
         if (active && currentDialogue != null) {
             return currentDialogue.getLine(currentLineIndex);
         }
-        return "";
+        return null;
     }
 
     public int getCurrentLineIndex() {

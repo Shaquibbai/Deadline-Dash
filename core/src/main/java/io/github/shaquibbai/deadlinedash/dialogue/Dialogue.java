@@ -5,14 +5,14 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Model representing a single conversation tree/dialogue sequence.
- * Holds the unique dialogue ID and an ordered list of text lines.
+ * Model representing a conversation sequence.
+ * Holds the unique dialogue ID and an ordered list of dialogue lines with speaker information.
  */
 public class Dialogue {
     private final String id;
-    private final List<String> lines;
+    private final List<DialogueLine> lines;
 
-    public Dialogue(String id, List<String> lines) {
+    public Dialogue(String id, List<DialogueLine> lines) {
         this.id = id != null ? id.trim() : "";
         if (lines != null) {
             this.lines = Collections.unmodifiableList(new ArrayList<>(lines));
@@ -25,7 +25,7 @@ public class Dialogue {
         return id;
     }
 
-    public List<String> getLines() {
+    public List<DialogueLine> getLines() {
         return lines;
     }
 
@@ -33,11 +33,19 @@ public class Dialogue {
         return lines.size();
     }
 
-    public String getLine(int index) {
+    public DialogueLine getLine(int index) {
         if (index < 0 || index >= lines.size()) {
-            return "";
+            return new DialogueLine(DialogueSpeaker.NPC, "");
         }
         return lines.get(index);
+    }
+
+    public String getText(int index) {
+        return getLine(index).getText();
+    }
+
+    public DialogueSpeaker getSpeaker(int index) {
+        return getLine(index).getSpeaker();
     }
 
     public boolean isEmpty() {

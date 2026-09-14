@@ -14,14 +14,50 @@ class DialogueManagerTest {
     private static final String TEST_JSON = "{\n" +
         "  \"milu_intro\": {\n" +
         "    \"lines\": [\n" +
-        "      \"Hello.\",\n" +
-        "      \"Have you seen my notebook?\",\n" +
-        "      \"I need it before my next class.\"\n" +
+        "      {\n" +
+        "        \"speaker\": \"npc\",\n" +
+        "        \"text\": \"Hello.\"\n" +
+        "      },\n" +
+        "      {\n" +
+        "        \"speaker\": \"player\",\n" +
+        "        \"text\": \"Hi.\"\n" +
+        "      },\n" +
+        "      {\n" +
+        "        \"speaker\": \"npc\",\n" +
+        "        \"text\": \"Have you seen my notebook?\"\n" +
+        "      },\n" +
+        "      {\n" +
+        "        \"speaker\": \"player\",\n" +
+        "        \"text\": \"Yes sir.\"\n" +
+        "      }\n" +
+        "    ]\n" +
+        "  },\n" +
+        "  \"consecutive_test\": {\n" +
+        "    \"lines\": [\n" +
+        "      {\n" +
+        "        \"speaker\": \"npc\",\n" +
+        "        \"text\": \"Line 1 from NPC.\"\n" +
+        "      },\n" +
+        "      {\n" +
+        "        \"speaker\": \"npc\",\n" +
+        "        \"text\": \"Line 2 from NPC.\"\n" +
+        "      },\n" +
+        "      {\n" +
+        "        \"speaker\": \"player\",\n" +
+        "        \"text\": \"Line 3 from Player.\"\n" +
+        "      },\n" +
+        "      {\n" +
+        "        \"speaker\": \"player\",\n" +
+        "        \"text\": \"Line 4 from Player.\"\n" +
+        "      }\n" +
         "    ]\n" +
         "  },\n" +
         "  \"guard_intro\": {\n" +
         "    \"lines\": [\n" +
-        "      \"You cannot enter this area yet.\"\n" +
+        "      {\n" +
+        "        \"speaker\": \"npc\",\n" +
+        "        \"text\": \"You cannot enter this area yet.\"\n" +
+        "      }\n" +
         "    ]\n" +
         "  }\n" +
         "}";
@@ -33,24 +69,28 @@ class DialogueManagerTest {
     }
 
     @Test
-    @DisplayName("Dialogue data loads and returns dialogue by ID")
+    @DisplayName("Dialogue data loads and returns dialogue by ID with speaker info")
     void testLoadDialogues() {
         Dialogue milu = dialogueManager.getDialogue("milu_intro");
         assertNotNull(milu);
         assertEquals("milu_intro", milu.getId());
-        assertEquals(3, milu.getLineCount());
-        assertEquals("Hello.", milu.getLine(0));
-        assertEquals("Have you seen my notebook?", milu.getLine(1));
-        assertEquals("I need it before my next class.", milu.getLine(2));
+        assertEquals(4, milu.getLineCount());
 
-        Dialogue guard = dialogueManager.getDialogue("guard_intro");
-        assertNotNull(guard);
-        assertEquals(1, guard.getLineCount());
-        assertEquals("You cannot enter this area yet.", guard.getLine(0));
+        assertEquals(DialogueSpeaker.NPC, milu.getSpeaker(0));
+        assertEquals("Hello.", milu.getText(0));
+
+        assertEquals(DialogueSpeaker.PLAYER, milu.getSpeaker(1));
+        assertEquals("Hi.", milu.getText(1));
+
+        assertEquals(DialogueSpeaker.NPC, milu.getSpeaker(2));
+        assertEquals("Have you seen my notebook?", milu.getText(2));
+
+        assertEquals(DialogueSpeaker.PLAYER, milu.getSpeaker(3));
+        assertEquals("Yes sir.", milu.getText(3));
     }
 
     @Test
-    @DisplayName("Starting dialogue with interactable NPC activates manager and sets first line")
+    @DisplayName("Starting dialogue with interactable NPC activates manager and displays NPC name for NPC line")
     void testStartDialogueValid() {
         NPCConfig config = new NPCConfig("MiluSir", "Male01_Forward", "milu_intro", "NONE", false, true, 100f);
         NPC npc = new NPC(config, 100, 100, 35, 57, null);
@@ -61,37 +101,53 @@ class DialogueManagerTest {
         assertTrue(started);
         assertTrue(dialogueManager.isActive());
         assertEquals("MiluSir", dialogueManager.getCurrentSpeaker());
+        assertEquals(DialogueSpeaker.NPC, dialogueManager.getCurrentSpeakerType());
         assertEquals("Hello.", dialogueManager.getCurrentLine());
         assertEquals(0, dialogueManager.getCurrentLineIndex());
-        assertEquals(3, dialogueManager.getTotalLines());
+        assertEquals(4, dialogueManager.getTotalLines());
         assertFalse(dialogueManager.isLastLine());
     }
 
     @Test
-    @DisplayName("Advancing dialogue steps through all lines and closes after the last line")
-    void testAdvanceDialogue() {
+    @DisplayName("Advancing dialogue steps through alternating NPC and player lines in exact order")
+    void testAdvanceDialogueAlternating() {
         NPCConfig config = new NPCConfig("MiluSir", "Male01_Forward", "milu_intro", "NONE", false, true, 100f);
         NPC npc = new NPC(config, 100, 100, 35, 57, null);
 
         dialogueManager.startDialogue(npc);
 
-        // Line 0
+        // Line 0: NPC (MiluSir)
         assertEquals(0, dialogueManager.getCurrentLineIndex());
+        assertEquals("MiluSir", dialogueManager.getCurrentSpeaker());
+        assertEquals(DialogueSpeaker.NPC, dialogueManager.getCurrentSpeakerType());
         assertEquals("Hello.", dialogueManager.getCurrentLine());
         assertFalse(dialogueManager.isLastLine());
 
-        // Advance -> Line 1
+        // Advance -> Line 1: Player ("Player")
         dialogueManager.advanceDialogue();
         assertTrue(dialogueManager.isActive());
         assertEquals(1, dialogueManager.getCurrentLineIndex());
-        assertEquals("Have you seen my notebook?", dialogueManager.getCurrentLine());
+        assertEquals("Player", dialogueManager.getCurrentSpeaker());
+        assertEquals(DialogueSpeaker.PLAYER, dialogueManager.getCurrentSpeakerType());
+        assertEquals("Hi.", dialogueManager.getCurrentLine());
         assertFalse(dialogueManager.isLastLine());
 
-        // Advance -> Line 2 (Last line)
+        // Advance -> Line 2: NPC (MiluSir)
         dialogueManager.advanceDialogue();
         assertTrue(dialogueManager.isActive());
         assertEquals(2, dialogueManager.getCurrentLineIndex());
-        assertEquals("I need it before my next class.", dialogueManager.getCurrentLine());
+        assertEquals("MiluSir", dialogueManager.getCurrentSpeaker());
+        assertEquals(DialogueSpeaker.NPC, dialogueManager.getCurrentSpeakerType());
+        assertEquals("Have you seen my notebook?", dialogueManager.getCurrentLine());
+        assertFalse(dialogueManager.isLastLine());
+
+        // Advance -> Line 3: Player ("Player" - Last line)
+        dialogueManager.advanceDialogue();
+        assertTrue(dialogueManager.isActive());
+        assertEquals(3, dialogueManager.getCurrentLineIndex());
+        assertEquals("Player", dialogueManager.getCurrentSpeaker());
+        assertEquals(DialogueSpeaker.PLAYER, dialogueManager.getCurrentSpeakerType());
+        assertEquals("Yes sir.", dialogueManager.getCurrentLine());
         assertTrue(dialogueManager.isLastLine());
 
         // Advance -> Ends dialogue
@@ -99,6 +155,38 @@ class DialogueManagerTest {
         assertFalse(dialogueManager.isActive());
         assertEquals("", dialogueManager.getCurrentSpeaker());
         assertEquals("", dialogueManager.getCurrentLine());
+    }
+
+    @Test
+    @DisplayName("Handles consecutive lines from the same speaker without forced alternation")
+    void testConsecutiveLinesSameSpeaker() {
+        NPCConfig config = new NPCConfig("Guard", "Male01_Forward", "consecutive_test", "NONE", false, true, 100f);
+        NPC npc = new NPC(config, 100, 100, 35, 57, null);
+
+        dialogueManager.startDialogue(npc);
+
+        // Line 0: NPC
+        assertEquals("Guard", dialogueManager.getCurrentSpeaker());
+        assertEquals("Line 1 from NPC.", dialogueManager.getCurrentLine());
+
+        // Line 1: NPC (Consecutive)
+        dialogueManager.advanceDialogue();
+        assertEquals("Guard", dialogueManager.getCurrentSpeaker());
+        assertEquals("Line 2 from NPC.", dialogueManager.getCurrentLine());
+
+        // Line 2: Player
+        dialogueManager.advanceDialogue();
+        assertEquals("Player", dialogueManager.getCurrentSpeaker());
+        assertEquals("Line 3 from Player.", dialogueManager.getCurrentLine());
+
+        // Line 3: Player (Consecutive)
+        dialogueManager.advanceDialogue();
+        assertEquals("Player", dialogueManager.getCurrentSpeaker());
+        assertEquals("Line 4 from Player.", dialogueManager.getCurrentLine());
+        assertTrue(dialogueManager.isLastLine());
+
+        dialogueManager.advanceDialogue();
+        assertFalse(dialogueManager.isActive());
     }
 
     @Test

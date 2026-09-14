@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Align;
 
 /**
- * Screen-space HUD renderer for active NPC dialogues.
+ * Screen-space HUD renderer for active NPC and player dialogues.
  * Renders an anchored bottom dialog panel, speaker name badge, wrapped dialogue lines,
  * and an animated [F] progression prompt.
  */
@@ -45,8 +45,13 @@ public class DialogueUI {
         batch.setColor(0.14f, 0.18f, 0.25f, 0.98f);
         batch.draw(whitePixel, PANEL_X, PANEL_Y + PANEL_H - HEADER_H, PANEL_W, HEADER_H);
 
-        // Top Golden Accent Strip
-        batch.setColor(0.95f, 0.78f, 0.25f, 1.0f);
+        // Top Accent Strip (Gold for NPC, Cyan for Player)
+        boolean isPlayer = dialogueManager.getCurrentSpeakerType() == DialogueSpeaker.PLAYER;
+        if (isPlayer) {
+            batch.setColor(0.30f, 0.85f, 1.0f, 1.0f);
+        } else {
+            batch.setColor(0.95f, 0.78f, 0.25f, 1.0f);
+        }
         batch.draw(whitePixel, PANEL_X, PANEL_Y + PANEL_H - 3f, PANEL_W, 3f);
 
         // Outer Border
@@ -63,7 +68,11 @@ public class DialogueUI {
         // 2. Speaker Name
         String speaker = dialogueManager.getCurrentSpeaker();
         if (speaker != null && !speaker.isEmpty()) {
-            speakerFont.setColor(new Color(1.0f, 0.85f, 0.30f, 1.0f));
+            if (isPlayer) {
+                speakerFont.setColor(new Color(0.40f, 0.88f, 1.0f, 1.0f));
+            } else {
+                speakerFont.setColor(new Color(1.0f, 0.85f, 0.30f, 1.0f));
+            }
             speakerFont.draw(batch, speaker, PANEL_X + PADDING_X, PANEL_Y + PANEL_H - 12f);
         }
 

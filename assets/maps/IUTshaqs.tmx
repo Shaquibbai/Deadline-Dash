@@ -2425,15 +2425,19 @@
   <object id="385" name="lake" x="12535.2" y="9018.67" width="28.5152" height="4063.64"/>
   <object id="402" name="lake" x="10480.5" y="6953.23" width="2943.41" height="34.7196" rotation="45.1576"/>
   <object id="403" name="lake" x="11193.1" y="6351.07" width="3113.09" height="32.8123" rotation="45.0387"/>
-  <object id="417" name="Guard" x="6586" y="19168" width="80" height="126"/>
+  <object id="417" name="Guard" x="6579.24" y="19163.1" width="42.6994" height="66.1963">
+   <properties>
+    <property name="interactionRange" type="float" value="1000"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="17" name="NPCs" class="NPC">
-  <object id="416" name="Guard" type="NPC" x="6586" y="19168" width="80" height="126">
+  <object id="416" name="Guard" type="NPC" x="6568" y="19145.7" width="66.6994" height="99.4315">
    <properties>
     <property name="dialogue" value="guard_warning"/>
     <property name="idleAnimation" type="bool" value="false"/>
     <property name="interactable" type="bool" value="true"/>
-    <property name="interactionRange" type="float" value="100"/>
+    <property name="interactionRange" type="float" value="200"/>
     <property name="model" value="Male01_Left"/>
     <property name="name" value="Guard"/>
    </properties>
