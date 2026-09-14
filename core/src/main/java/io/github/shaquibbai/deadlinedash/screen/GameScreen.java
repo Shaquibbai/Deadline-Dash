@@ -56,6 +56,10 @@ public class GameScreen implements Screen {
     private String triggeredTransitionName = "";
     private float transitionMessageTimer = 0f;
 
+    // Transition Confirmation State
+    private io.github.shaquibbai.deadlinedash.map.SceneTransition pendingTransition = null;
+    private boolean isTransitionConfirmationActive = false;
+
     // Dialogue System Components
     private DialogueManager dialogueManager;
     private DialogueUI dialogueUI;
@@ -259,7 +263,7 @@ public class GameScreen implements Screen {
         camera.zoom = MathUtils.clamp(camera.zoom, MIN_ZOOM, MAX_ZOOM);
 
         boolean isF3Pressed = Gdx.input.isKeyPressed(Input.Keys.F3);
-        boolean isUiModalActive = itemConfirmationDialog.isActive() || backpackUI.isOpen() || dialogueManager.isActive();
+        boolean isUiModalActive = itemConfirmationDialog.isActive() || backpackUI.isOpen() || dialogueManager.isActive() || isTransitionConfirmationActive;
 
         if (isF3Pressed && !isUiModalActive) {
             // Free Camera Debug Mode: WASD moves camera directly across map
@@ -293,7 +297,6 @@ public class GameScreen implements Screen {
         io.github.shaquibbai.deadlinedash.map.SceneTransition overlappingTransition = player.getOverlappingTransition(mapManager.getSceneTransitions());
         if (overlappingTransition != null && overlappingTransition != currentInsideTransition) {
             handleTransitionTriggered(overlappingTransition);
-            overlappingTransition = player.getOverlappingTransition(mapManager.getSceneTransitions());
         }
         currentInsideTransition = overlappingTransition;
 
@@ -309,6 +312,17 @@ public class GameScreen implements Screen {
 
         boolean justClicked = Gdx.input.justTouched();
 
+        // Handle Transition Confirmation YES / NO Mouse Clicking
+        if (isTransitionConfirmationActive) {
+            if (justClicked) {
+                if (DialogueUI.YES_BUTTON_BOUNDS.contains(hudMousePos.x, hudMousePos.y)) {
+                    confirmTransition();
+                } else if (DialogueUI.NO_BUTTON_BOUNDS.contains(hudMousePos.x, hudMousePos.y)) {
+                    cancelTransitionConfirmation();
+                }
+            }
+        }
+
         // Process temporary debug item pickup key trigger ('E') and REP debug key trigger ('R')
         handleDebugItemPickupTrigger();
         handleDebugRepTrigger();
@@ -318,14 +332,16 @@ public class GameScreen implements Screen {
 
         // Process HUD Backpack icon click (toggle backpack UI)
         if (justClicked && backpackIconBounds.contains(hudMousePos.x, hudMousePos.y)) {
-            if (!itemConfirmationDialog.isActive() && !dialogueManager.isActive()) {
+            if (!itemConfirmationDialog.isActive() && !dialogueManager.isActive() && !isTransitionConfirmationActive) {
                 backpackUI.toggle();
             }
         }
 
-        // ESC key: close active dialogue / close backpack UI / return to Start Menu (TitleScreen)
+        // ESC key: cancel transition confirmation / close active dialogue / close backpack UI / return to Start Menu (TitleScreen)
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            if (dialogueManager.isActive()) {
+            if (isTransitionConfirmationActive) {
+                cancelTransitionConfirmation();
+            } else if (dialogueManager.isActive()) {
                 dialogueManager.endDialogue();
             } else if (backpackUI.isOpen()) {
                 backpackUI.setOpen(false);
@@ -408,8 +424,11 @@ public class GameScreen implements Screen {
         // 5. Render Centered Item Storage Confirmation Dialog & Toast Notifications
         itemConfirmationDialog.render(batch, hudTitleFont, hudFont, whitePixel, hudMousePos);
 
-        // 6. Render Bottom Anchored Dialogue UI Box (if dialogue active)
-        if (dialogueManager.isActive()) {
+        // 6. Render Dialogue UI / Transition Confirmation UI (reusing existing bottom dialogue window)
+        if (isTransitionConfirmationActive && pendingTransition != null) {
+            String promptMsg = getConfirmationText(pendingTransition.getName());
+            dialogueUI.renderConfirmation(batch, hudFont, whitePixel, promptMsg, hudMousePos);
+        } else if (dialogueManager.isActive()) {
             dialogueUI.render(batch, hudTitleFont, hudFont, whitePixel, dialogueManager);
         }
 
@@ -454,27 +473,79 @@ public class GameScreen implements Screen {
             transition.getName(), player.getX(), player.getY());
 
         if (transition.hasDestination()) {
-            String targetMap = transition.getTargetMapPath();
-            String targetSpawn = transition.getTargetSpawnName();
-            System.out.printf("[TRANSITION] Loading destination map: %s with spawn target: %s%n", targetMap, targetSpawn);
-
-            mapManager.loadMap(targetMap, batch);
-
-            Vector2 spawnPos = mapManager.getSpawnPosition("PlayerSpawns", targetSpawn);
-            if (spawnPos != null) {
-                player.setPosition(spawnPos.x, spawnPos.y);
-                System.out.printf("[TRANSITION] Placed player at spawn '%s': (%.1f, %.1f)%n", targetSpawn, spawnPos.x, spawnPos.y);
+            String confirmationText = getConfirmationText(transition.getName());
+            if (confirmationText != null) {
+                pendingTransition = transition;
+                isTransitionConfirmationActive = true;
+                System.out.printf("[TRANSITION] Prompting confirmation for transition: %s%n", transition.getName());
             } else {
-                System.err.printf("[TRANSITION] ERROR: Spawn '%s' not found in '%s'. Leaving player at (%.1f, %.1f)%n",
-                    targetSpawn, targetMap, player.getX(), player.getY());
+                performMapTransition(transition);
             }
-
-            // Immediately update camera position to follow newly positioned player
-            camera.position.set(player.getCenterX(), player.getCenterY(), 0f);
-            camera.update();
-
-            System.out.printf("[TRANSITION] Successfully completed transition to map: %s%n", targetMap);
         }
+    }
+
+    private String getConfirmationText(String transitionName) {
+        if (transitionName == null) return null;
+        switch (transitionName) {
+            case "Cafe_to_LeftCafeInside":
+            case "Cafe_to_RightCafeInside":
+            case "Cafe_to_CafeInside":
+                return "Do you want to enter cafeteria?";
+            case "AB1_to_AB1Inside":
+                return "Do you want to enter Academic Building 1?";
+            case "AB1_Lobby_to_AB1":
+                return "Do you want to exit Academic Building 1?";
+            case "AB1_Lobby_to_AB1_Class1":
+                return "Do you want to enter class?";
+            case "AB1_Class1_to_AB1_Lobby":
+                return "Do you want to exit classroom?";
+            case "CafeInsideLeft_to_CafeLeft":
+            case "CafeInsideRight_to_CafeRight":
+                return "Do you want to exit Cafeteria?";
+            default:
+                return null;
+        }
+    }
+
+    private void confirmTransition() {
+        if (pendingTransition != null && pendingTransition.hasDestination()) {
+            io.github.shaquibbai.deadlinedash.map.SceneTransition target = pendingTransition;
+            isTransitionConfirmationActive = false;
+            pendingTransition = null;
+            performMapTransition(target);
+        } else {
+            cancelTransitionConfirmation();
+        }
+    }
+
+    private void cancelTransitionConfirmation() {
+        isTransitionConfirmationActive = false;
+        pendingTransition = null;
+        System.out.println("[TRANSITION] Transition confirmation cancelled.");
+    }
+
+    private void performMapTransition(io.github.shaquibbai.deadlinedash.map.SceneTransition transition) {
+        String targetMap = transition.getTargetMapPath();
+        String targetSpawn = transition.getTargetSpawnName();
+        System.out.printf("[TRANSITION] Loading destination map: %s with spawn target: %s%n", targetMap, targetSpawn);
+
+        mapManager.loadMap(targetMap, batch);
+
+        Vector2 spawnPos = mapManager.getSpawnPosition("PlayerSpawns", targetSpawn);
+        if (spawnPos != null) {
+            player.setPosition(spawnPos.x, spawnPos.y);
+            System.out.printf("[TRANSITION] Placed player at spawn '%s': (%.1f, %.1f)%n", targetSpawn, spawnPos.x, spawnPos.y);
+        } else {
+            System.err.printf("[TRANSITION] ERROR: Spawn '%s' not found in '%s'. Leaving player at (%.1f, %.1f)%n",
+                targetSpawn, targetMap, player.getX(), player.getY());
+        }
+
+        // Immediately update camera position to follow newly positioned player
+        camera.position.set(player.getCenterX(), player.getCenterY(), 0f);
+        camera.update();
+
+        currentInsideTransition = player.getOverlappingTransition(mapManager.getSceneTransitions());
+        System.out.printf("[TRANSITION] Successfully completed transition to map: %s%n", targetMap);
     }
 
     private void handleDialogueInput() {
@@ -483,7 +554,7 @@ public class GameScreen implements Screen {
             if (fJustPressed) {
                 dialogueManager.advanceDialogue();
             }
-        } else if (!itemConfirmationDialog.isActive() && !backpackUI.isOpen()) {
+        } else if (!itemConfirmationDialog.isActive() && !backpackUI.isOpen() && !isTransitionConfirmationActive) {
             if (fJustPressed) {
                 NPC closestNpc = findClosestInteractableNPC();
                 if (closestNpc != null) {
