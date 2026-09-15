@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="64" tileheight="64" infinite="0" nextlayerid="8" nextobjectid="17">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="64" tileheight="64" infinite="0" nextlayerid="8" nextobjectid="30">
  <tileset firstgid="1" source="../tilesets/cafe.tsx"/>
  <objectgroup id="7" name="NPCs"/>
  <layer id="1" name="Tile Layer 1" width="30" height="20">
@@ -19,7 +19,7 @@
 2684354893,2684354869,147,148,149,150,151,152,153,154,155,156,157,158,157,158,159,160,157,158,159,160,161,162,163,163,201,166,204,120,
 2684354892,2684354868,171,172,173,174,175,176,177,178,179,180,181,182,181,182,183,184,181,182,183,184,185,186,187,187,201,190,204,120,
 2684354892,2684354868,195,196,197,198,199,200,201,202,203,204,205,206,205,206,207,208,205,206,207,208,209,210,211,211,201,214,204,96,
-2684354892,2684354868,219,220,221,222,223,224,225,226,227,228,229,230,229,230,231,232,229,230,231,232,233,234,235,235,235,238,204,120,
+2684354892,2684354868,219,220,221,222,223,224,225,226,227,228,229,230,229,230,231,232,229,230,231,232,233,234,235,235,225,238,204,120,
 2684354892,2684354868,243,244,245,246,247,248,249,250,251,252,253,254,253,254,255,256,253,254,255,256,257,258,259,259,259,262,263,264,
 2684354892,2684354868,267,268,269,270,271,272,204,274,275,276,277,278,277,278,204,204,277,278,204,204,281,282,283,283,283,286,287,288,
 2684354893,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,118,536871031,536871055,536871079,536871103,536871127,536871151,1073742028,1073741920,
@@ -27,7 +27,7 @@
 </data>
  </layer>
  <objectgroup id="2" name="PlayerSpawns">
-  <object id="1" name="PlayerSpawn_from_CafeRight" x="1596" y="143.333">
+  <object id="1" name="PlayerSpawn_from_CafeRight" x="1596" y="156.333">
    <point/>
   </object>
   <object id="2" name="PlayerSpawn_from_CafeLeft" x="1589.88" y="1120.39">
@@ -43,10 +43,22 @@
   <object id="12" name="walls" x="1623.33" y="65.6667" width="129.667" height="34"/>
   <object id="13" name="walls" x="1457.33" y="65.3333" width="106.667" height="31"/>
   <object id="14" name="walls" x="1624" y="1182.5" width="129" height="37"/>
-  <object id="15" x="1181.82" y="1375.76"/>
+  <object id="17" name="walls" x="1668" y="313" width="42" height="664"/>
+  <object id="18" name="walls" x="1328" y="156" width="46" height="98"/>
+  <object id="19" name="walls" x="1328" y="411" width="46" height="98"/>
+  <object id="20" name="walls" x="1329" y="667" width="46" height="98"/>
+  <object id="21" name="walls" x="1329" y="881" width="46" height="98"/>
+  <object id="22" name="walls" x="1071" y="887" width="46" height="98"/>
+  <object id="23" name="walls" x="1073" y="665" width="46" height="98"/>
+  <object id="24" name="walls" x="1074" y="408" width="46" height="98"/>
+  <object id="25" name="walls" x="1075" y="153" width="46" height="98"/>
+  <object id="26" name="walls" x="511" y="157" width="46" height="98"/>
+  <object id="27" name="walls" x="510" y="410" width="46" height="98"/>
+  <object id="28" name="walls" x="514" y="665" width="46" height="98"/>
+  <object id="29" name="walls" x="510" y="888" width="46" height="98"/>
  </objectgroup>
  <objectgroup id="3" name="SceneTransitions">
-  <object id="3" name="CafeInsideRight_to_CafeRight" x="1492.83" y="68" width="173.833" height="49.3333"/>
-  <object id="4" name="CafeInsideLeft_to_CafeLeft" x="1487.33" y="1160.33" width="187.333" height="48.3333"/>
+  <object id="3" name="CafeInsideRight_to_CafeRight" x="1512.83" y="59" width="214.833" height="60.3333"/>
+  <object id="4" name="CafeInsideLeft_to_CafeLeft" x="1487.33" y="1146.33" width="202.333" height="62.3333"/>
  </objectgroup>
 </map>

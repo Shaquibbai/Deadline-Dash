@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="20" height="30" tilewidth="64" tileheight="64" infinite="0" nextlayerid="6" nextobjectid="60">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="20" height="30" tilewidth="64" tileheight="64" infinite="0" nextlayerid="6" nextobjectid="61">
  <tileset firstgid="1" source="../tilesets/class.tsx"/>
  <layer id="1" name="TileLayer1" width="20" height="30">
   <data encoding="csv">
@@ -16,7 +16,7 @@
 105,105,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,263,
 105,105,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,287,
 194,195,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,263,
-198,219,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,287,
+242,219,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,287,
 242,243,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,287,
 266,267,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,287,
 290,291,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,287,
@@ -33,26 +33,14 @@
 290,315,316,317,318,319,320,321,322,323,322,322,326,327,328,329,330,331,332,287,
 0,341,341,341,342,343,344,345,346,347,343,343,350,351,352,353,354,355,356,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-  </data>
+</data>
  </layer>
  <objectgroup id="2" name="PlayerSpawns">
-  <object id="1" name="PlayerSpawn_from_AB1_Lobby" x="96.8333" y="728">
+  <object id="1" name="PlayerSpawn_from_AB1_Lobby" x="96.8333" y="701.5">
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="5" name="NPCs">
-  <object id="58" type="NPC" x="425.833" y="650.167" width="35" height="57">
-   <properties>
-    <property name="dialogue" value="milu_intro"/>
-    <property name="idleAnimation" type="bool" value="false"/>
-    <property name="interactable" type="bool" value="true"/>
-    <property name="interactionRange" type="float" value="100"/>
-    <property name="model" value="Male01_Forward"/>
-    <property name="name" value="MiluSir"/>
-    <property name="quest" value="NONE"/>
-   </properties>
-  </object>
- </objectgroup>
+ <objectgroup id="5" name="NPCs"/>
  <objectgroup id="3" name="Collision">
   <object id="2" name="desks" x="185" y="726.5" width="291.5" height="40"/>
   <object id="4" name="desks" x="185.75" y="804" width="291.5" height="40"/>
@@ -105,10 +93,10 @@
   <object id="52" name="walls" x="1021.63" y="636" width="9" height="49.125"/>
   <object id="53" name="walls" x="541" y="637.25" width="40.75" height="18.5"/>
   <object id="54" name="walls" x="608.75" y="634.25" width="43" height="20.25"/>
-  <object id="55" name="walls" x="-23.3333" y="624" width="46" height="166"/>
+  <object id="55" name="walls" x="-23.3333" y="624" width="54.5" height="166"/>
   <object id="56" name="walls" x="11.5" y="768.5" width="72" height="34.5"/>
  </objectgroup>
  <objectgroup id="4" name="SceneTransitions">
-  <object id="57" name="AB1_Class1_to_AB1_Lobby" x="5.33333" y="634.667" width="44" height="140"/>
+  <object id="57" name="AB1_Class1_to_AB1_Lobby" x="5.33333" y="634.667" width="55.5" height="140"/>
  </objectgroup>
 </map>

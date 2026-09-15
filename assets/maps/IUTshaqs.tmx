@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="1584" height="528" tilewidth="64" tileheight="64" infinite="0" nextlayerid="19" nextobjectid="422">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="1584" height="528" tilewidth="64" tileheight="64" infinite="0" nextlayerid="19" nextobjectid="424">
  <tileset firstgid="1" name="roads" tilewidth="64" tileheight="64" tilecount="384" columns="24">
   <image source="../tilesets/roads.png" width="1536" height="1024"/>
  </tileset>
@@ -2965,6 +2965,8 @@
   <object id="419" name="mechaLab" x="24054.6" y="19392.4" width="1578.85" height="942.394"/>
   <object id="420" name="mechaLab" x="24062.8" y="21181.9" width="1578.85" height="942.394"/>
   <object id="421" name="mechaLab" x="24065.1" y="22973.2" width="1578.85" height="942.394"/>
+  <object id="422" name="Cafe" x="11475.3" y="16620" width="51.33" height="680"/>
+  <object id="423" name="Ab1_1" x="15712.2" y="19568.3" width="495.515" height="79.333"/>
  </objectgroup>
  <objectgroup id="17" name="NPCs" class="NPC">
   <object id="416" name="Guard" type="NPC" x="6568" y="19145.7" width="66.6994" height="99.4315">
@@ -2979,11 +2981,11 @@
   </object>
  </objectgroup>
  <objectgroup id="15" name="SceneTransitions">
-  <object id="364" name="AB1_to_AB1Inside" x="15680" y="19584" width="502" height="168"/>
+  <object id="364" name="AB1_to_AB1Inside" x="15712" y="19540" width="502" height="168"/>
   <object id="406" name="AB2_to_AB2Inside" x="15684" y="23702" width="398" height="148"/>
   <object id="407" name="CDS_to_CdsInside" x="7462.67" y="18180" width="234.667" height="98.6667"/>
   <object id="408" name="Cafe_to_RightCafeInside" x="13738.1" y="15189.6" width="148.121" height="1484.3"/>
-  <object id="413" name="Cafe_to_LeftCafeInside" x="11470" y="16300" width="84" height="984"/>
+  <object id="413" name="Cafe_to_LeftCafeInside" x="11454" y="16286" width="84" height="338"/>
  </objectgroup>
  <objectgroup id="16" name="PlayerSpawns">
   <object id="412" name="PlayerSpawn_from_AB1_Lobby" x="15920" y="19482">
@@ -2992,7 +2994,7 @@
   <object id="414" name="PlayerSpawn_from_CafeInsideRight" x="13932.1" y="16286">
    <point/>
   </object>
-  <object id="415" name="PlayerSpawn_from_CafeInsideLeft" x="11372" y="16792">
+  <object id="415" name="PlayerSpawn_from_CafeInsideLeft" x="11390" y="16522">
    <point/>
   </object>
  </objectgroup>
