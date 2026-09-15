@@ -259,6 +259,19 @@ public class GameScreen implements Screen {
             }
         }
     }
+
+    // =========================================================================
+    // TEMPORARY DEBUG FOOTBALL MINIGAME TRIGGER (FOR TESTING ONLY)
+    // Press 'T' in-game to launch FootballScreen minigame.
+    // =========================================================================
+    private void handleFootballMinigameTrigger() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
+            boolean isUiModalActive = itemConfirmationDialog.isActive() || backpackUI.isOpen() || dialogueManager.isActive() || isTransitionConfirmationActive;
+            if (!isUiModalActive) {
+                game.setScreen(new io.github.shaquibbai.deadlinedash.minigame.football.FootballScreen(game, this));
+            }
+        }
+    }
     // =========================================================================
 
     @Override
@@ -338,9 +351,10 @@ public class GameScreen implements Screen {
             }
         }
 
-        // Process temporary debug item pickup key trigger ('E') and REP debug key trigger ('R')
+        // Process temporary debug item pickup key trigger ('E'), REP debug key trigger ('R'), and Football minigame ('T')
         handleDebugItemPickupTrigger();
         handleDebugRepTrigger();
+        handleFootballMinigameTrigger();
 
         // Process NPC Interaction and Dialogue Progression ('F')
         handleDialogueInput();
