@@ -179,7 +179,7 @@ public class ItemConfirmationDialog {
 
         // Subtext showing item name & quantity
         if (pendingItem != null) {
-            String itemDetail = pendingItem.getName() + " × " + pendingQuantity;
+            String itemDetail = pendingItem.getName() + " x " + pendingQuantity;
             bodyFont.setColor(new Color(1.0f, 0.85f, 0.3f, 1f));
             layout.setText(bodyFont, itemDetail);
             bodyFont.draw(batch, itemDetail, DIALOG_X + (DIALOG_W - layout.width) / 2f, DIALOG_Y + DIALOG_H - 95f);

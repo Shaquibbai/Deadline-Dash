@@ -77,6 +77,9 @@ public class OpeningScreen implements Screen {
     private float shakeIntensity = 0f;
     private float flashAlpha = 0f;
 
+    private final com.badlogic.gdx.math.Rectangle skipButtonBounds = new com.badlogic.gdx.math.Rectangle(1115f, 25f, 140f, 40f);
+    private final com.badlogic.gdx.math.Vector3 mousePos = new com.badlogic.gdx.math.Vector3();
+
     public OpeningScreen(DeadlineDash game) {
         this.game = game;
         this.batch = game.getBatch();
@@ -138,6 +141,10 @@ public class OpeningScreen implements Screen {
 
         ScreenUtils.clear(0f, 0f, 0f, 1f);
 
+        // Calculate unprojected mouse position
+        mousePos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+        viewport.unproject(mousePos);
+
         // Apply screen shake if active (Scream scene)
         float offsetX = 0f;
         float offsetY = 0f;
@@ -164,6 +171,9 @@ public class OpeningScreen implements Screen {
             batch.setColor(1f, 0.1f, 0.1f, flashAlpha * 0.35f);
             batch.draw(whitePixel, 0, 0, 1280, 720);
         }
+
+        // Draw Skip Button (Bottom-Right)
+        drawSkipButton();
 
         // Draw Global Black Fade Overlay for Smooth Transitions
         float fadeAlpha = getTransitionFadeAlpha();
@@ -236,7 +246,7 @@ public class OpeningScreen implements Screen {
         if (transitionPhase == TransitionPhase.NONE) {
             float pulse = (float) Math.sin(animTimer * 5f) * 0.3f + 0.7f;
             subFont.setColor(0.65f, 0.65f, 0.65f, pulse);
-            layout.setText(subFont, "PRESS [SPACE / CLICK] TO ADVANCE ▶");
+            layout.setText(subFont, "PRESS [SPACE / CLICK] TO ADVANCE >");
             subFont.draw(batch, layout, (1280f - layout.width) / 2f, 60f);
         }
     }
@@ -269,7 +279,7 @@ public class OpeningScreen implements Screen {
 
         // App Header
         subFont.setColor(Color.ORANGE);
-        subFont.draw(batch, "🔔 ACADEMIC PORTAL NOTIFICATION", drawX + 25f, drawY + scaledH - 22f);
+        subFont.draw(batch, "[!] ACADEMIC PORTAL NOTIFICATION", drawX + 25f, drawY + scaledH - 22f);
 
         subFont.setColor(Color.GRAY);
         subFont.draw(batch, "JUST NOW", drawX + scaledW - 110f, drawY + scaledH - 22f);
@@ -315,11 +325,11 @@ public class OpeningScreen implements Screen {
 
         subFont.setColor(Color.WHITE);
         subFont.getData().setScale(1.2f);
-        subFont.draw(batch, "💬 CSE PROJECT GROUP", chatX + 25f, chatY + chatH - 20f);
+        subFont.draw(batch, "[CHAT] CSE PROJECT GROUP", chatX + 25f, chatY + chatH - 20f);
         subFont.getData().setScale(1.0f);
 
         subFont.setColor(Color.LIGHT_GRAY);
-        subFont.draw(batch, "4 members • Tap for group info", chatX + 25f, chatY + chatH - 45f);
+        subFont.draw(batch, "4 members - Tap for group info", chatX + 25f, chatY + chatH - 45f);
 
         // Date pill divider
         float pillW = 90f;
@@ -366,11 +376,11 @@ public class OpeningScreen implements Screen {
         if (!isUnseenScene) {
             // Scene 6: Sent status
             subFont.setColor(Color.CYAN);
-            subFont.draw(batch, "✓ Sent", bubbleX + bubbleW - 75f, bubbleY + 22f);
+            subFont.draw(batch, "Sent", bubbleX + bubbleW - 55f, bubbleY + 22f);
         } else {
-            // Scene 9: Integrated subtle read status ("✓ Sent · Seen by 0")
+            // Scene 9: Integrated subtle read status ("Sent - Seen by 0")
             subFont.setColor(new Color(1.0f, 0.45f, 0.45f, 1f));
-            subFont.draw(batch, "✓ Sent · Seen by 0", bubbleX + bubbleW - 165f, bubbleY + 22f);
+            subFont.draw(batch, "Sent - Seen by 0", bubbleX + bubbleW - 145f, bubbleY + 22f);
         }
 
         // Bottom Chat Input Bar (Simulated UI)
@@ -384,7 +394,7 @@ public class OpeningScreen implements Screen {
         if (transitionPhase == TransitionPhase.NONE) {
             float pulse = (float) Math.sin(animTimer * 5f) * 0.3f + 0.7f;
             subFont.setColor(0.7f, 0.7f, 0.7f, pulse);
-            subFont.draw(batch, "PRESS [SPACE / CLICK] TO CONTINUE ▶", chatX + chatW - 275f, chatY - 25f);
+            subFont.draw(batch, "PRESS [SPACE / CLICK] TO CONTINUE >", chatX + chatW - 275f, chatY - 25f);
         }
     }
 
@@ -412,7 +422,7 @@ public class OpeningScreen implements Screen {
         if (transitionPhase == TransitionPhase.NONE) {
             float pulse = (float) Math.sin(animTimer * 8f) * 0.4f + 0.6f;
             subFont.setColor(1.0f, 0.3f, 0.3f, pulse);
-            layout.setText(subFont, "PRESS [SPACE / CLICK] TO CONTINUE ▶");
+            layout.setText(subFont, "PRESS [SPACE / CLICK] TO CONTINUE >");
             subFont.draw(batch, layout, (1280f - layout.width) / 2f, 60f);
         }
     }
@@ -492,7 +502,38 @@ public class OpeningScreen implements Screen {
         transitionTimer = 0f;
     }
 
+    private void drawSkipButton() {
+        boolean isHovered = skipButtonBounds.contains(mousePos.x, mousePos.y);
+
+        // Background
+        if (isHovered) {
+            batch.setColor(0.20f, 0.25f, 0.35f, 0.90f);
+        } else {
+            batch.setColor(0.10f, 0.12f, 0.16f, 0.75f);
+        }
+        batch.draw(whitePixel, skipButtonBounds.x, skipButtonBounds.y, skipButtonBounds.width, skipButtonBounds.height);
+
+        // Border Accent
+        batch.setColor(isHovered ? Color.WHITE : new Color(0.45f, 0.55f, 0.70f, 0.80f));
+        batch.draw(whitePixel, skipButtonBounds.x, skipButtonBounds.y, skipButtonBounds.width, 2);
+        batch.draw(whitePixel, skipButtonBounds.x, skipButtonBounds.y + skipButtonBounds.height - 2, skipButtonBounds.width, 2);
+        batch.draw(whitePixel, skipButtonBounds.x, skipButtonBounds.y, 2, skipButtonBounds.height);
+        batch.draw(whitePixel, skipButtonBounds.x + skipButtonBounds.width - 2, skipButtonBounds.y, 2, skipButtonBounds.height);
+
+        // Text
+        subFont.setColor(isHovered ? Color.WHITE : new Color(0.85f, 0.88f, 0.95f, 0.90f));
+        layout.setText(subFont, "SKIP");
+        subFont.draw(batch, "SKIP", skipButtonBounds.x + (skipButtonBounds.width - layout.width) / 2f,
+                skipButtonBounds.y + (skipButtonBounds.height + layout.height) / 2f);
+    }
+
     private void handleInput(float delta) {
+        // Skip Button Click Check (Active at all times during intro)
+        if (Gdx.input.justTouched() && skipButtonBounds.contains(mousePos.x, mousePos.y)) {
+            transitionToTitleScreen();
+            return;
+        }
+
         // Auto-advance for Scene 7 ("After some time")
         if (currentState == SceneState.SCENE_7_TIME_PASSES) {
             if (sceneTimer >= 2.2f && transitionPhase == TransitionPhase.NONE) {
@@ -571,6 +612,7 @@ public class OpeningScreen implements Screen {
 
     private void transitionToTitleScreen() {
         game.setScreen(new TitleScreen(game));
+        dispose();
     }
 
     @Override

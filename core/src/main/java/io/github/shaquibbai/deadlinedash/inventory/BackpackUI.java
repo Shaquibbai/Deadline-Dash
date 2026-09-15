@@ -190,8 +190,8 @@ public class BackpackUI {
                 // B. Item Icon (Center of slot box)
                 renderItemIcon(batch, whitePixel, itemName, slotX + SLOT_W / 2f, slotY + SLOT_H / 2f - 2f);
 
-                // C. Quantity (e.g., "×10", "×5", "×3", "×500" - Bottom Right)
-                String qtyStr = "×" + entry.getQuantity();
+                // C. Quantity (e.g., "x10", "x5", "x3", "x500" - Bottom Right)
+                String qtyStr = "x" + entry.getQuantity();
                 itemFont.setColor(new Color(1.0f, 0.85f, 0.3f, 1.0f));
                 layout.setText(itemFont, qtyStr);
                 itemFont.draw(batch, qtyStr, slotX + SLOT_W - layout.width - 8f, slotY + 20f);

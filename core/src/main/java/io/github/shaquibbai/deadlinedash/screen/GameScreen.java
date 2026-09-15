@@ -373,15 +373,18 @@ public class GameScreen implements Screen {
                 repSystem.getRep(), backpack.getDistinctItemCount());
         }
 
-        // Render Tiled map layers
-        mapManager.render(camera);
+        // 1. Render Background Tiled map layers (ground, paths, walls, structures)
+        mapManager.renderBackground(camera);
 
-        // Render entities (NPCs & Player)
+        // 2. Render entities (NPCs & Player)
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         mapManager.renderNPCs(batch);
         player.render(batch);
         batch.end();
+
+        // 3. Render Foreground Tiled map layer (roofs, tree canopies, overhangs)
+        mapManager.renderForeground(camera);
 
         // Render HUD elements (REP Points HUD, Debug Text, Backpack Icon, Backpack UI, Centered Dialogs, Dialogue UI)
         hudCamera.update();

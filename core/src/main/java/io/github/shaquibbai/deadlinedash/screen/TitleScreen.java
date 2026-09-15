@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -52,6 +53,9 @@ public class TitleScreen implements Screen {
     private final Rectangle optionsBackBtn = new Rectangle((1280f - 180f) / 2f, 270f, 180f, 45f);
 
     private float animTime = 0f;
+    private float revealTimer = 0f;
+    private static final float REVEAL_DURATION = 1.25f;
+
     private final GlyphLayout layout = new GlyphLayout();
     private float clickCooldown = 0f;
 
@@ -101,6 +105,7 @@ public class TitleScreen implements Screen {
     @Override
     public void render(float delta) {
         animTime += delta;
+        revealTimer += delta;
         ScreenUtils.clear(0.05f, 0.05f, 0.08f, 1f);
 
         // Calculate unprojected mouse position
@@ -120,6 +125,16 @@ public class TitleScreen implements Screen {
             drawMainMenuButtons();
         } else {
             drawOptionsModal();
+        }
+
+        // 3. Smooth Initial Reveal Overlay (Black fade-out over 1.25s)
+        if (revealTimer < REVEAL_DURATION) {
+            float fadeAlpha = 1.0f - MathUtils.clamp(revealTimer / REVEAL_DURATION, 0f, 1f);
+            if (fadeAlpha > 0f) {
+                batch.setColor(0f, 0f, 0f, fadeAlpha);
+                batch.draw(whitePixel, 0, 0, 1280, 720);
+                batch.setColor(Color.WHITE);
+            }
         }
 
         batch.end();

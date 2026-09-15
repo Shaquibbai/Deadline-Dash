@@ -127,25 +127,25 @@ public class Player {
             idleTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
             // Explicit mapping according to specification:
-            // cells 0–1 -> DOWN idle
+            // cells 0-1 -> DOWN idle
             Array<TextureRegion> idleDownFrames = new Array<>();
             idleDownFrames.add(new TextureRegion(idleTexture, 0 * 128, 0, 128, 183));
             idleDownFrames.add(new TextureRegion(idleTexture, 1 * 128, 0, 128, 183));
             idleDownAnim = new Animation<>(IDLE_FRAME_DURATION, idleDownFrames, Animation.PlayMode.LOOP);
 
-            // cells 2–3 -> UP idle
+            // cells 2-3 -> UP idle
             Array<TextureRegion> idleUpFrames = new Array<>();
             idleUpFrames.add(new TextureRegion(idleTexture, 2 * 128, 0, 128, 183));
             idleUpFrames.add(new TextureRegion(idleTexture, 3 * 128, 0, 128, 183));
             idleUpAnim = new Animation<>(IDLE_FRAME_DURATION, idleUpFrames, Animation.PlayMode.LOOP);
 
-            // cells 6–7 -> LEFT idle
+            // cells 6-7 -> LEFT idle
             Array<TextureRegion> idleLeftFrames = new Array<>();
             idleLeftFrames.add(new TextureRegion(idleTexture, 6 * 128, 0, 128, 183));
             idleLeftFrames.add(new TextureRegion(idleTexture, 7 * 128, 0, 128, 183));
             idleLeftAnim = new Animation<>(IDLE_FRAME_DURATION, idleLeftFrames, Animation.PlayMode.LOOP);
 
-            // cells 4–5 -> RIGHT idle
+            // cells 4-5 -> RIGHT idle
             Array<TextureRegion> idleRightFrames = new Array<>();
             idleRightFrames.add(new TextureRegion(idleTexture, 4 * 128, 0, 128, 183));
             idleRightFrames.add(new TextureRegion(idleTexture, 5 * 128, 0, 128, 183));

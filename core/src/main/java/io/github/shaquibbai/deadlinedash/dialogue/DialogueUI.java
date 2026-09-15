@@ -85,11 +85,11 @@ public class DialogueUI {
             bodyFont.draw(batch, layout, PANEL_X + PADDING_X, PANEL_Y + PANEL_H - HEADER_H - 18f);
         }
 
-        // 4. Prompt Indicator [F] NEXT ▶ / [F] CLOSE ▶ (Bottom Right)
+        // 4. Prompt Indicator [F] NEXT > / [F] CLOSE > (Bottom Right)
         float pulse = (float) Math.sin(animTimer * 6f) * 0.25f + 0.75f;
         bodyFont.setColor(0.70f, 0.85f, 1.0f, pulse);
 
-        String promptText = dialogueManager.isLastLine() ? "[F] CLOSE ▶" : "[F] NEXT ▶";
+        String promptText = dialogueManager.isLastLine() ? "[F] CLOSE >" : "[F] NEXT >";
         layout.setText(bodyFont, promptText);
         bodyFont.draw(batch, promptText, PANEL_X + PANEL_W - layout.width - 24f, PANEL_Y + 22f);
 

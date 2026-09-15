@@ -37,6 +37,9 @@ public class MapManager {
     private final com.badlogic.gdx.utils.Array<SceneTransition> sceneTransitions = new com.badlogic.gdx.utils.Array<>();
     private final com.badlogic.gdx.utils.Array<NPC> npcs = new com.badlogic.gdx.utils.Array<>();
 
+    private int[] backgroundLayerIndices = new int[0];
+    private int[] foregroundLayerIndices = new int[0];
+
     public MapManager(String mapPath, SpriteBatch batch) {
         loadMap(mapPath, batch);
     }
@@ -80,6 +83,7 @@ public class MapManager {
         loadCollisionObjects();
         loadSceneTransitions();
         loadNPCs();
+        updateLayerIndices();
     }
 
     private com.badlogic.gdx.math.Polygon createPolygonFromMapObject(MapObject object) {
@@ -378,11 +382,47 @@ public class MapManager {
         defaultSpawnPosition.set(5120.0f, 32000.0f);
     }
 
-    public void render(OrthographicCamera camera) {
-        if (mapRenderer != null) {
-            mapRenderer.setView(camera);
-            mapRenderer.render();
+    private void updateLayerIndices() {
+        if (tiledMap == null) {
+            backgroundLayerIndices = new int[0];
+            foregroundLayerIndices = new int[0];
+            return;
         }
+
+        com.badlogic.gdx.utils.IntArray bgList = new com.badlogic.gdx.utils.IntArray();
+        com.badlogic.gdx.utils.IntArray fgList = new com.badlogic.gdx.utils.IntArray();
+
+        com.badlogic.gdx.maps.MapLayers layers = tiledMap.getLayers();
+        for (int i = 0; i < layers.getCount(); i++) {
+            com.badlogic.gdx.maps.MapLayer layer = layers.get(i);
+            if ("Foreground".equalsIgnoreCase(layer.getName())) {
+                fgList.add(i);
+            } else {
+                bgList.add(i);
+            }
+        }
+
+        backgroundLayerIndices = bgList.toArray();
+        foregroundLayerIndices = fgList.toArray();
+    }
+
+    public void renderBackground(OrthographicCamera camera) {
+        if (mapRenderer != null && backgroundLayerIndices != null && backgroundLayerIndices.length > 0) {
+            mapRenderer.setView(camera);
+            mapRenderer.render(backgroundLayerIndices);
+        }
+    }
+
+    public void renderForeground(OrthographicCamera camera) {
+        if (mapRenderer != null && foregroundLayerIndices != null && foregroundLayerIndices.length > 0) {
+            mapRenderer.setView(camera);
+            mapRenderer.render(foregroundLayerIndices);
+        }
+    }
+
+    public void render(OrthographicCamera camera) {
+        renderBackground(camera);
+        renderForeground(camera);
     }
 
     public TiledMap getTiledMap() {
