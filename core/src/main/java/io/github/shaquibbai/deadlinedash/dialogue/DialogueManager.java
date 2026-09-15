@@ -102,8 +102,18 @@ public class DialogueManager {
         }
     }
 
+    public interface DialogueCompletionListener {
+        void onDialogueCompleted(String dialogueId, NPC npc);
+    }
+
+    private DialogueCompletionListener completionListener;
+
+    public void setCompletionListener(DialogueCompletionListener listener) {
+        this.completionListener = listener;
+    }
+
     /**
-     * Starts conversation with the specified NPC.
+     * Starts conversation with the specified NPC using its default dialogue ID.
      *
      * @param npc the target NPC
      * @return true if dialogue successfully started, false otherwise
@@ -112,12 +122,25 @@ public class DialogueManager {
         if (npc == null) {
             return false;
         }
+        return startDialogue(npc, npc.getConfig().getDialogue());
+    }
 
-        if (!npc.getConfig().isInteractable()) {
+    /**
+     * Starts conversation with the specified NPC using an explicit dialogue ID.
+     *
+     * @param npc the target NPC
+     * @param dialogueId target dialogue ID
+     * @return true if dialogue successfully started, false otherwise
+     */
+    public boolean startDialogue(NPC npc, String dialogueId) {
+        if (npc == null) {
             return false;
         }
 
-        String dialogueId = npc.getConfig().getDialogue();
+        if (!npc.isInteractable()) {
+            return false;
+        }
+
         if (dialogueId == null || dialogueId.trim().isEmpty() || "NONE".equalsIgnoreCase(dialogueId.trim())) {
             return false;
         }
@@ -147,7 +170,12 @@ public class DialogueManager {
 
         currentLineIndex++;
         if (currentLineIndex >= currentDialogue.getLineCount()) {
+            String finishedId = currentDialogue.getId();
+            NPC finishedNpc = currentNpc;
             endDialogue();
+            if (completionListener != null) {
+                completionListener.onDialogueCompleted(finishedId, finishedNpc);
+            }
         }
     }
 

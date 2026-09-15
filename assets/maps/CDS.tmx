@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="60" height="60" tilewidth="64" tileheight="64" infinite="0" nextlayerid="3" nextobjectid="1">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="60" height="60" tilewidth="64" tileheight="64" infinite="0" nextlayerid="6" nextobjectid="7">
  <tileset firstgid="1" source="../tilesets/cds.tsx"/>
  <layer id="2" name="Tile Layer 2" width="60" height="60">
   <data encoding="csv">
@@ -129,4 +129,30 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
+ <objectgroup id="3" name="PlayerSpawns">
+  <object id="1" name="PlayerSpawn_from_CDSFront" x="1592" y="3344">
+   <point/>
+  </object>
+  <object id="2" name="PlayerSpawn_from_CDSBack" x="2048" y="2076">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="4" name="SceneTransitions">
+  <object id="3" name="CDSInsideFront_to_CDSFront" x="1517.33" y="3377.33" width="168" height="88"/>
+  <object id="4" name="CDSInsideBack_to_CDSBack" x="1454" y="2152" width="232" height="76"/>
+  <object id="5" name="CDSInsideBack_to_CDSBack" x="1870" y="1892" width="94" height="274"/>
+ </objectgroup>
+ <objectgroup id="5" name="NPCs">
+  <object id="6" type="NPC" x="1427.27" y="2351.52" width="103.03" height="233.333">
+   <properties>
+    <property name="dialogue" value="Shopkeeper_intro"/>
+    <property name="idleAnimation" type="bool" value="false"/>
+    <property name="interactable" type="bool" value="false"/>
+    <property name="interactionRange" type="float" value="100"/>
+    <property name="model" value="Male01_Left"/>
+    <property name="name" value="Shopkeeper"/>
+    <property name="quest" value="Quest1"/>
+   </properties>
+  </object>
+ </objectgroup>
 </map>

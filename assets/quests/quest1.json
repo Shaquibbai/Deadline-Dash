@@ -1,0 +1,40 @@
+{
+  "id": "Quest1",
+  "name": "Quest 1",
+  "description": "Deliver the laptop to Rafat",
+  "rewardRep": 25,
+  "initialInteractableNpcs": ["Rafat"],
+  "steps": [
+    {
+      "stepIndex": 1,
+      "npc": "Rafat",
+      "dialogueId": "Rafat_intro",
+      "unlockNpcs": ["Sofia"]
+    },
+    {
+      "stepIndex": 2,
+      "npc": "Sofia",
+      "dialogueId": "Sofia_intro",
+      "unlockNpcs": ["Shopkeeper"]
+    },
+    {
+      "stepIndex": 3,
+      "npc": "Shopkeeper",
+      "dialogueId": "Shopkeeper_intro",
+      "addItem": "Pizza"
+    },
+    {
+      "stepIndex": 4,
+      "npc": "Sofia",
+      "dialogueId": "Sofia_pizza",
+      "requiredItem": "Pizza",
+      "addItem": "Laptop"
+    },
+    {
+      "stepIndex": 5,
+      "npc": "Rafat",
+      "dialogueId": "Rafat_laptop",
+      "requiredItem": "Laptop"
+    }
+  ]
+}

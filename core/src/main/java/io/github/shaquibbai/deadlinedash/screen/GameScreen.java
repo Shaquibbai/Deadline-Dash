@@ -28,6 +28,7 @@ import io.github.shaquibbai.deadlinedash.inventory.Item;
 import io.github.shaquibbai.deadlinedash.inventory.ItemConfirmationDialog;
 import io.github.shaquibbai.deadlinedash.map.MapManager;
 import io.github.shaquibbai.deadlinedash.npc.NPC;
+import io.github.shaquibbai.deadlinedash.quest.QuestManager;
 import io.github.shaquibbai.deadlinedash.rep.RepSystem;
 
 /**
@@ -64,6 +65,9 @@ public class GameScreen implements Screen {
     private DialogueManager dialogueManager;
     private DialogueUI dialogueUI;
 
+    // Quest System Component
+    private QuestManager questManager;
+
     // REP / Progression System Components
     private RepSystem repSystem;
 
@@ -95,11 +99,22 @@ public class GameScreen implements Screen {
         initRepSystem();
         initBackpackSystem();
         initDialogueSystem();
+        initQuestSystem();
     }
 
     private void initDialogueSystem() {
         dialogueManager = new DialogueManager();
         dialogueUI = new DialogueUI();
+    }
+
+    private void initQuestSystem() {
+        questManager = new QuestManager(AssetPaths.QUEST_1);
+        dialogueManager.setCompletionListener((dialogueId, npc) -> {
+            String npcName = npc != null ? npc.getName() : "";
+            questManager.onDialogueCompleted(dialogueId, npcName, backpack, repSystem);
+            questManager.syncMapNpcs(mapManager.getNpcs());
+        });
+        questManager.syncMapNpcs(mapManager.getNpcs());
     }
 
     private void initCameraAndViewport() {
@@ -505,6 +520,14 @@ public class GameScreen implements Screen {
             case "CafeInsideLeft_to_CafeLeft":
             case "CafeInsideRight_to_CafeRight":
                 return "Do you want to exit Cafeteria?";
+            case "CDSFront_to_CDSInsideFront":
+            case "CDSFront_to_CdsInsideFront":
+            case "CDSBack_to_CDSInsideBack":
+            case "CDSBack_to_CdsInsideBack":
+                return "Do you want to enter CDS?";
+            case "CDSInsideFront_to_CDSFront":
+            case "CDSInsideBack_to_CDSBack":
+                return "Do you want to exit CDS?";
             default:
                 return null;
         }
@@ -533,6 +556,7 @@ public class GameScreen implements Screen {
         System.out.printf("[TRANSITION] Loading destination map: %s with spawn target: %s%n", targetMap, targetSpawn);
 
         mapManager.loadMap(targetMap, batch);
+        questManager.syncMapNpcs(mapManager.getNpcs());
 
         Vector2 spawnPos = mapManager.getSpawnPosition("PlayerSpawns", targetSpawn);
         if (spawnPos != null) {
@@ -561,7 +585,8 @@ public class GameScreen implements Screen {
             if (fJustPressed) {
                 NPC closestNpc = findClosestInteractableNPC();
                 if (closestNpc != null) {
-                    dialogueManager.startDialogue(closestNpc);
+                    String dialogueId = questManager.getDialogueForNpc(closestNpc, backpack);
+                    dialogueManager.startDialogue(closestNpc, dialogueId);
                 }
             }
         }
@@ -575,10 +600,11 @@ public class GameScreen implements Screen {
         float playerCenterY = player.getCenterY();
 
         for (NPC npc : mapManager.getNpcs()) {
-            if (!npc.getConfig().isInteractable()) {
+            questManager.syncNpcInteractability(npc);
+            if (!npc.isInteractable()) {
                 continue;
             }
-            String dialogue = npc.getConfig().getDialogue();
+            String dialogue = questManager.getDialogueForNpc(npc, backpack);
             if (dialogue == null || dialogue.trim().isEmpty() || "NONE".equalsIgnoreCase(dialogue.trim())) {
                 continue;
             }

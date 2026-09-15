@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="1584" height="528" tilewidth="64" tileheight="64" infinite="0" nextlayerid="19" nextobjectid="424">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="1584" height="528" tilewidth="64" tileheight="64" infinite="0" nextlayerid="19" nextobjectid="432">
  <tileset firstgid="1" name="roads" tilewidth="64" tileheight="64" tilecount="384" columns="24">
   <image source="../tilesets/roads.png" width="1536" height="1024"/>
  </tileset>
@@ -2979,13 +2979,37 @@
     <property name="name" value="Guard"/>
    </properties>
   </object>
+  <object id="429" name="Sofia" type="NPC" x="26972" y="3688" width="172" height="284">
+   <properties>
+    <property name="dialogue" value="Sofia_intro"/>
+    <property name="idleAnimation" type="bool" value="false"/>
+    <property name="interactable" type="bool" value="false"/>
+    <property name="interactionRange" type="float" value="100"/>
+    <property name="model" value="Female01_Forward"/>
+    <property name="name" value="Sofia"/>
+    <property name="quest" value="Quest1"/>
+   </properties>
+  </object>
+  <object id="430" name="Rafat" type="NPC" x="26000.1" y="4412.97" width="187.879" height="309.091">
+   <properties>
+    <property name="dialogue" value="Rafat_intro"/>
+    <property name="idleAnimation" type="bool" value="false"/>
+    <property name="interactable" type="bool" value="false"/>
+    <property name="interactionRange" type="float" value="100"/>
+    <property name="model" value="Male01_Forward"/>
+    <property name="name" value="Rafat"/>
+    <property name="quest" value="Quest1"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="15" name="SceneTransitions">
   <object id="364" name="AB1_to_AB1Inside" x="15712" y="19540" width="502" height="168"/>
   <object id="406" name="AB2_to_AB2Inside" x="15684" y="23702" width="398" height="148"/>
-  <object id="407" name="CDS_to_CdsInside" x="7462.67" y="18180" width="234.667" height="98.6667"/>
+  <object id="407" name="CDSFront_to_CDSInsideFront" x="7470.67" y="18196" width="234.667" height="146.667"/>
   <object id="408" name="Cafe_to_RightCafeInside" x="13738.1" y="15189.6" width="148.121" height="1484.3"/>
   <object id="413" name="Cafe_to_LeftCafeInside" x="11454" y="16286" width="84" height="338"/>
+  <object id="424" name="CDSBack_to_CDSInsideBack" x="5816" y="17140" width="692" height="172"/>
+  <object id="425" name="CDSBack_to_CDSInsideBack" x="7580" y="16756" width="196" height="524"/>
  </objectgroup>
  <objectgroup id="16" name="PlayerSpawns">
   <object id="412" name="PlayerSpawn_from_AB1_Lobby" x="15920" y="19482">
@@ -2995,6 +3019,12 @@
    <point/>
   </object>
   <object id="415" name="PlayerSpawn_from_CafeInsideLeft" x="11390" y="16522">
+   <point/>
+  </object>
+  <object id="427" name="PlayerSpawn_from_CDSInsideFront" x="7584" y="18512">
+   <point/>
+  </object>
+  <object id="428" name="PlayerSpawn_from_CDSInsideBack" x="7452" y="16972">
    <point/>
   </object>
  </objectgroup>

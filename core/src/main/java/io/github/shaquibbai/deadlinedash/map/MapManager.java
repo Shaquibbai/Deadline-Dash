@@ -192,6 +192,24 @@ public class MapManager {
                                 targetMapPath = AssetPaths.MAP_IUT_CAMPUS;
                                 targetSpawnName = "PlayerSpawn_from_CafeInsideRight";
                                 break;
+                            case "CDSFront_to_CDSInsideFront":
+                            case "CDSFront_to_CdsInsideFront":
+                                targetMapPath = AssetPaths.MAP_CDS;
+                                targetSpawnName = "PlayerSpawn_from_CDSFront";
+                                break;
+                            case "CDSBack_to_CDSInsideBack":
+                            case "CDSBack_to_CdsInsideBack":
+                                targetMapPath = AssetPaths.MAP_CDS;
+                                targetSpawnName = "PlayerSpawn_from_CDSBack";
+                                break;
+                            case "CDSInsideFront_to_CDSFront":
+                                targetMapPath = AssetPaths.MAP_IUT_CAMPUS;
+                                targetSpawnName = "PlayerSpawn_from_CDSInsideFront";
+                                break;
+                            case "CDSInsideBack_to_CDSBack":
+                                targetMapPath = AssetPaths.MAP_IUT_CAMPUS;
+                                targetSpawnName = "PlayerSpawn_from_CDSInsideBack";
+                                break;
                             case "AB2_to_AB2Inside":
                                 targetMapPath = AssetPaths.MAP_AB2_LOBBY;
                                 targetSpawnName = "PlayerSpawn";
@@ -335,7 +353,9 @@ public class MapManager {
         }
 
         for (MapObject object : spawnLayer.getObjects()) {
-            if (searchTarget.equals(object.getName())) {
+            String name = object.getName();
+            if (searchTarget.equals(name) ||
+                (name != null && name.replaceAll("_", "").equalsIgnoreCase(searchTarget.replaceAll("_", "")))) {
                 if (object instanceof com.badlogic.gdx.maps.objects.PointMapObject pointObject) {
                     return new Vector2(pointObject.getPoint().x, pointObject.getPoint().y);
                 } else if (object instanceof com.badlogic.gdx.maps.objects.RectangleMapObject rectObject) {

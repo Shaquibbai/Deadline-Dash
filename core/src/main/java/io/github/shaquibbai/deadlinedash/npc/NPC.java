@@ -13,6 +13,7 @@ public class NPC {
     private float width;
     private float height;
     private NPCVisual visual;
+    private boolean interactable;
 
     public NPC(NPCConfig config, float x, float y, float width, float height, NPCVisual visual) {
         this.config = config != null ? config : new NPCConfig("", "", "NONE", "NONE", false, false, 0f);
@@ -20,6 +21,7 @@ public class NPC {
         this.width = width;
         this.height = height;
         this.visual = visual;
+        this.interactable = this.config.isInteractable();
     }
 
     public void render(SpriteBatch batch) {
@@ -37,6 +39,14 @@ public class NPC {
 
     public NPCConfig getConfig() {
         return config;
+    }
+
+    public boolean isInteractable() {
+        return interactable;
+    }
+
+    public void setInteractable(boolean interactable) {
+        this.interactable = interactable;
     }
 
     public String getName() {

@@ -36,7 +36,7 @@
       },
       {
         "speaker": "player",
-        "text": "Yesn't"
+        "text": "No"
       },
       {
         "speaker": "npc",
@@ -45,6 +45,71 @@
       {
         "speaker": "player",
         "text": "SNEAK AROUND!!! How could I?"
+      }
+    ]
+  },
+
+  "Rafat_intro": {
+    "lines": [
+      {
+        "speaker": "npc",
+        "text": "Hey! I left my laptop with Sofia. Could you please ask her for it?"
+      },
+      {
+        "speaker": "player",
+        "text": "Sure, I'll go talk to Sofia."
+      }
+    ]
+  },
+
+  "Sofia_intro": {
+    "lines": [
+      {
+        "speaker": "npc",
+        "text": "I have Rafat's laptop, but I'm starving. Get me a Pizza from the Shopkeeper at CDS first!"
+      },
+      {
+        "speaker": "player",
+        "text": "Alright, heading to CDS now."
+      }
+    ]
+  },
+
+  "Shopkeeper_intro": {
+    "lines": [
+      {
+        "speaker": "npc",
+        "text": "Welcome to CDS! Here is a fresh hot Pizza for you."
+      },
+      {
+        "speaker": "player",
+        "text": "Thanks! This is just what Sofia asked for."
+      }
+    ]
+  },
+
+  "Sofia_pizza": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Here's the Pizza from CDS!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Awesome! Thank you so much! Here is Rafat's Laptop."
+      }
+    ]
+  },
+
+  "Rafat_laptop": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Here is your Laptop!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Thank you so much! You really saved me!"
       }
     ]
   }
