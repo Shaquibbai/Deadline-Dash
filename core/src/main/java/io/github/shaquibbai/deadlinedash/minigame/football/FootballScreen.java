@@ -19,7 +19,11 @@ import io.github.shaquibbai.deadlinedash.DeadlineDash;
 import io.github.shaquibbai.deadlinedash.screen.GameScreen;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * Standalone Football Minigame Screen for Deadline Dash.
@@ -68,14 +72,20 @@ public class FootballScreen implements Screen {
     private static final float RECEIVING_RADIUS = 28.0f;         // Hidden internal receiving radius
     private static final float INTERCEPTION_HEIGHT = 35.0f;      // Max ball zHeight for airborne interception
     private static final float MAX_KICK_DISTANCE = 780.0f;       // Tuned max kick distance for enlarged pitch
-    private static final float ROUND_DURATION = 10.0f;          // 10 seconds decision timer
+    private static final float ROUND_DURATION = 5.0f;           // 5 seconds decision timer
     private static final float TOTAL_MATCH_DURATION = 150.0f;    // 2.5 minutes total match time
     private static final float MIN_PLAYER_SEPARATION = 95.0f;    // Rebalanced min spacing on larger pitch
+    private static final float MAX_CHASE_DISTANCE = 220.0f;     // Max distance for nearest player to chase landed ball
+    private static final float CHASE_SPEED = 240.0f;           // Player chase movement speed in px/s
+    private static final float ARRIVAL_DISTANCE = 12.0f;        // Arrival distance threshold to capture landed ball
+
+    private static final float INTRO_PASS_DURATION = 1.00f;     // Duration of opening scripted pass to MC in seconds
 
     // Pitch Players & Ball
     private final List<FootballPlayer> players = new ArrayList<>();
     private FootballPlayer mcPlayer;
     private FootballPlayer goalkeeper;
+    private FootballPlayer chasingPlayer = null;
     private final FootballBall ball = new FootballBall();
 
     // Aim & Power State
@@ -85,26 +95,115 @@ public class FootballScreen implements Screen {
     // Timers & Score Tracking
     private float matchTimer = TOTAL_MATCH_DURATION;
     private float roundTimer = ROUND_DURATION;
-    private int score = 0;
+    private float introPassTimer = 0f;
+    private float roundResultTimer = 0f;
+    private int mcPoints = 0;
+    private int cseScore = 0;
+    private int eeeScore = 0;
+    private int evaluatedSegments = 0;
     private int successfulPasses = 0;
     private int failedPasses = 0;
     private int totalRounds = 0;
 
     // Screen State
     public enum GameState {
+        MATCH_INTRO_PASS,
         AIMING,
         MC_KICKING,
         BALL_IN_FLIGHT,
+        BALL_GROUND_RECOVERY,
         ROUND_RESULT,
         MATCH_OVER
     }
 
+    public enum CommentaryType {
+        SUCCESS,
+        FAIL,
+        TIMEOUT
+    }
+
+    private static class CommentaryItem {
+        final String text;
+        final Color color;
+
+        CommentaryItem(String text, Color color) {
+            this.text = text;
+            this.color = color;
+        }
+    }
+
+    private static class CommentaryGroup {
+        final List<CommentaryItem> items;
+
+        CommentaryGroup(List<CommentaryItem> items) {
+            this.items = items;
+        }
+    }
+
+    // Sideline Commentary System (Left-side shout bubbles burst)
+    private static final String[] SUCCESS_COMMENTS = {
+        "That's how you do it...",
+        "That's the cleanest pass of history",
+        "How come i've never seen him before!!",
+        "Oh!! What a pass!!!",
+        "Bro finally woke up!",
+        "THAT WAS ACTUALLY GOOD!!!",
+        "Keep going, CSE!",
+        "WHO IS THIS GUY??",
+        "Okay okay, I see you!",
+        "THAT'S THE STUFF!!!",
+        "BRO HAS FINALLY LOCKED IN!!!",
+        "WHO GAVE HIM THE CONTROLLER??",
+        "WAIT... THAT WAS GOOD??",
+        "CSE IS ALIVE!!!"
+    };
+
+    private static final String[] FAIL_COMMENTS = {
+        "Look where you pass, you dimwit!!!",
+        "Get this stupid subbed!",
+        "How much you took from them??",
+        "I bet he's wearing yellow inside!!",
+        "Get your eyes fixed",
+        "BRO WHO TAUGHT YOU FOOTBALL??",
+        "PASS THE BALL, NOT YOUR FUTURE!!!",
+        "THAT BALL HAS MORE IQ THAN YOU!!!",
+        "WHO ARE YOU PASSING TO?? YOUR ANCESTORS??",
+        "REF, CHECK HIS BRAIN!!!",
+        "HE'S PLAYING WITH WIFI DELAY!!!",
+        "WHY DID YOU PASS THERE?!",
+        "SOMEONE TAKE HIS SHOES!!!",
+        "BRO THINKS THIS IS FIFA!!!",
+        "MY GRANDMA COULD DEFEND THAT!!!",
+        "HE SAW THE BALL AND PANICKED!!!",
+        "THAT PASS HAD NO DESTINATION!!!",
+        "BRO JUST DONATED THE BALL!!!",
+        "EEE THANKS FOR THE GIFT!!!",
+        "WHAT WAS THE PLAN THERE??",
+        "HE PASSED TO THE ENEMY!!!"
+    };
+
+    private static final String[] TIMEOUT_COMMENTS = {
+        "What are you waiting for, stupid?? PASS!",
+        "Didn't have breakfast huh??",
+        "BRO, THE CLOCK EXISTS!!!",
+        "PASS BEFORE GRADUATION!!!",
+        "WHAT ARE YOU WAITING FOR??",
+        "HE'S THINKING ABOUT HIS LIFE AGAIN!!!",
+        "5 SECONDS AND NO PASS???",
+        "BRO FORGOT HOW TIME WORKS!!!",
+        "THE BALL IS NOT GOING TO PASS ITSELF!!!",
+        "WAKE UP!!!"
+    };
+
+    private CommentaryGroup activeGroup = null;
+    private CommentaryGroup previousGroup = null;
+    private static final float CROSSFADE_DURATION = 0.40f; // 0.4s smooth fade transition
+    private float crossfadeTimer = 0f;
+    private String lastGroupFirstComment = null;
+
     private GameState state = GameState.AIMING;
     private float kickPrepTimer = 0f;
     private Vector2 pendingTargetPos = new Vector2();
-    private String resultToastMessage = "";
-    private Color resultToastColor = Color.WHITE;
-    private float resultToastTimer = 0f;
     private float animTime = 0f;
 
     public FootballScreen(DeadlineDash game, GameScreen previousScreen) {
@@ -149,15 +248,64 @@ public class FootballScreen implements Screen {
 
     private void initMatch() {
         matchTimer = TOTAL_MATCH_DURATION;
-        score = 0;
+        mcPoints = 0;
+        cseScore = 0;
+        eeeScore = 0;
+        evaluatedSegments = 0;
         successfulPasses = 0;
         failedPasses = 0;
-        totalRounds = 0;
+        activeGroup = null;
+        previousGroup = null;
+        crossfadeTimer = 0f;
+        lastGroupFirstComment = null;
 
         // Fixed Goalkeeper near top goal line center
         goalkeeper = new FootballPlayer(VIEW_W / 2f, GOAL_LINE_Y - 30f, FootballPlayer.TeamRole.GOALKEEPER);
 
         startNextRound();
+        triggerOpeningPass();
+    }
+
+    public int getMcPoints() {
+        return mcPoints;
+    }
+
+    public int getCseScore() {
+        return cseScore;
+    }
+
+    public int getEeeScore() {
+        return eeeScore;
+    }
+
+    private int getScriptedCseScore() {
+        float elapsed = TOTAL_MATCH_DURATION - matchTimer;
+        if (elapsed < 120.0f) {
+            return 0;
+        } else if (elapsed < 147.0f) {
+            return 1;
+        } else {
+            return 2;
+        }
+    }
+
+    private int getScriptedEeeScore() {
+        float elapsed = TOTAL_MATCH_DURATION - matchTimer;
+        if (elapsed < 30.0f) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
+    private void triggerOpeningPass() {
+        Vector2 mcPos = mcPlayer.getPosition();
+        Vector2 startPos = new Vector2(FIELD_X + (FIELD_W / 2.0f), GOAL_LINE_Y - 180.0f);
+
+        // Scripted opening ground pass from top half to MC feet over 1.00s
+        ball.launchPass(startPos, mcPos, 0.20f);
+        introPassTimer = INTRO_PASS_DURATION;
+        state = GameState.MATCH_INTRO_PASS;
     }
 
     /**
@@ -176,15 +324,15 @@ public class FootballScreen implements Screen {
             mcPlayer = new FootballPlayer(mcX, mcY, FootballPlayer.TeamRole.MC);
             players.add(mcPlayer);
 
-            // 2. Place 4-5 CSE Teammates (Sky Blue)
+            // 2. Place 4-5 CSE Teammates (Total CSE = MC + 4 or 5 = 5 or 6)
             int numTeammates = MathUtils.random(4, 5);
             for (int i = 0; i < numTeammates; i++) {
                 Vector2 pos = generateValidPlayerPos(FIELD_Y + 220f, GOAL_LINE_Y - 110f);
                 players.add(new FootballPlayer(pos.x, pos.y, FootballPlayer.TeamRole.CSE_TEAMMATE));
             }
 
-            // 3. Place 5-6 EEE Opponents (Yellow)
-            int numOpponents = MathUtils.random(5, 6);
+            // 3. Place 6-8 EEE Opponents (Total EEE = 6, 7, or 8)
+            int numOpponents = MathUtils.random(6, 8);
             for (int i = 0; i < numOpponents; i++) {
                 Vector2 pos = generateValidPlayerPos(FIELD_Y + 240f, GOAL_LINE_Y - 80f);
                 players.add(new FootballPlayer(pos.x, pos.y, FootballPlayer.TeamRole.EEE_OPPONENT));
@@ -208,6 +356,7 @@ public class FootballScreen implements Screen {
         }
 
         // Reset ball at MC position
+        chasingPlayer = null;
         ball.holdAt(mcPlayer.getPosition());
 
         // Default aim facing UP towards the goal
@@ -271,9 +420,11 @@ public class FootballScreen implements Screen {
 
         drawHUD();
 
-        if (state == GameState.ROUND_RESULT) {
-            drawToastNotification();
-        } else if (state == GameState.MATCH_OVER) {
+        if (activeGroup != null) {
+            drawSidelineCommentary();
+        }
+
+        if (state == GameState.MATCH_OVER) {
             drawMatchOverModal();
         }
 
@@ -284,6 +435,9 @@ public class FootballScreen implements Screen {
     }
 
     private void updateGameLogic(float delta) {
+        // Always update sideline commentary burst queue
+        updateCommentary(delta);
+
         // Update player transitions & procedural animations
         for (FootballPlayer p : players) {
             p.update(delta);
@@ -293,13 +447,31 @@ public class FootballScreen implements Screen {
             return;
         }
 
+        if (state == GameState.MATCH_INTRO_PASS) {
+            // Scripted opening pass to MC feet over 1.00s
+            introPassTimer -= delta;
+            ball.update(delta);
+
+            if (introPassTimer <= 0f || ball.isLanded()) {
+                ball.holdAt(mcPlayer.getPosition());
+                roundTimer = ROUND_DURATION;
+                state = GameState.AIMING;
+            }
+            return;
+        }
+
         // Overall match timer countdown
         matchTimer -= delta;
         if (matchTimer <= 0f) {
             matchTimer = 0f;
+            checkSegmentEvaluations(TOTAL_MATCH_DURATION);
             state = GameState.MATCH_OVER;
             return;
         }
+
+        // Check 40-Second Segment Evaluations (at 40s, 80s, 120s elapsed)
+        float elapsedMatchTime = TOTAL_MATCH_DURATION - matchTimer;
+        checkSegmentEvaluations(elapsedMatchTime);
 
         if (state == GameState.AIMING) {
             // Keep ball anchored at MC feet while aiming
@@ -352,31 +524,112 @@ public class FootballScreen implements Screen {
 
             if (firstHitPlayer != null) {
                 // Ball touched a player's receiving radius! First contact wins immediately.
-                // Snap ball visually directly to receiving player's feet (z = 0)!
+                chasingPlayer = null;
                 ball.holdAt(firstHitPlayer.getPosition());
                 firstHitPlayer.triggerReactionAnimation();
 
                 if (firstHitPlayer.isPassableTeammate()) {
-                    score += 1;
+                    mcPoints += 1;
                     successfulPasses++;
-                    showToast("PASS COMPLETE! +1", new Color(0.30f, 0.95f, 0.40f, 1.0f));
+                    triggerCommentaryBurst(CommentaryType.SUCCESS, new Color(0.30f, 0.95f, 0.40f, 1.0f));
                 } else {
-                    score -= 1;
+                    mcPoints -= 1;
                     failedPasses++;
-                    showToast("INTERCEPTED! -1", new Color(1.0f, 0.35f, 0.35f, 1.0f));
+                    triggerCommentaryBurst(CommentaryType.FAIL, new Color(1.0f, 0.35f, 0.35f, 1.0f));
                 }
+                roundResultTimer = 0.40f;
+                state = GameState.ROUND_RESULT;
             } else if (ball.isLanded()) {
-                // Ball completed flight to landing point without entering any player's receiving radius
-                score -= 1;
-                failedPasses++;
-                showToast("PASS MISSED! -1", new Color(1.0f, 0.65f, 0.20f, 1.0f));
+                // Ball completed flight to landing point without mid-flight interception.
+                // GROUND BALL RECOVERY: Find single nearest outfield player to ball ground position.
+                FootballPlayer nearest = null;
+                float minDst = Float.MAX_VALUE;
+                Vector2 ballGroundPos = ball.getGroundPosition();
+
+                for (FootballPlayer p : players) {
+                    if (p.isMC()) continue;
+                    float d = p.getPosition().dst(ballGroundPos);
+                    if (d < minDst) {
+                        minDst = d;
+                        nearest = p;
+                    }
+                }
+
+                if (nearest != null && minDst <= MAX_CHASE_DISTANCE) {
+                    // Nearest player is within MAX_CHASE_DISTANCE (220px) -> chase ball!
+                    chasingPlayer = nearest;
+                    state = GameState.BALL_GROUND_RECOVERY;
+                } else {
+                    // Nobody chases (all > MAX_CHASE_DISTANCE)
+                    chasingPlayer = null;
+                    mcPoints -= 1;
+                    failedPasses++;
+                    triggerCommentaryBurst(CommentaryType.FAIL, new Color(1.0f, 0.65f, 0.20f, 1.0f));
+                    roundResultTimer = 0.40f;
+                    state = GameState.ROUND_RESULT;
+                }
+            }
+        } else if (state == GameState.BALL_GROUND_RECOVERY) {
+            // SINGLE NEAREST PLAYER CHASES LANDED BALL
+            if (chasingPlayer != null) {
+                Vector2 ballGroundPos = ball.getGroundPosition();
+                chasingPlayer.moveTowards(ballGroundPos, CHASE_SPEED, delta);
+
+                float dist = chasingPlayer.getPosition().dst(ballGroundPos);
+                if (dist <= ARRIVAL_DISTANCE) {
+                    // Chasing player reaches the ball and captures it!
+                    ball.holdAt(chasingPlayer.getPosition());
+                    chasingPlayer.triggerReactionAnimation();
+
+                    if (chasingPlayer.isPassableTeammate()) {
+                        mcPoints += 1;
+                        successfulPasses++;
+                        triggerCommentaryBurst(CommentaryType.SUCCESS, new Color(0.30f, 0.95f, 0.40f, 1.0f));
+                    } else {
+                        mcPoints -= 1;
+                        failedPasses++;
+                        triggerCommentaryBurst(CommentaryType.FAIL, new Color(1.0f, 0.35f, 0.35f, 1.0f));
+                    }
+                    chasingPlayer = null;
+                    roundResultTimer = 0.40f;
+                    state = GameState.ROUND_RESULT;
+                }
+            } else {
+                roundResultTimer = 0.40f;
+                state = GameState.ROUND_RESULT;
             }
         } else if (state == GameState.ROUND_RESULT) {
-            resultToastTimer -= delta;
-            if (resultToastTimer <= 0f) {
+            roundResultTimer -= delta;
+            if (roundResultTimer <= 0f) {
                 startNextRound();
             }
         }
+    }
+
+    private void checkSegmentEvaluations(float elapsedMatchTime) {
+        if (evaluatedSegments == 0 && elapsedMatchTime >= 40.0f) {
+            evaluateSegmentScore();
+            evaluatedSegments = 1;
+        } else if (evaluatedSegments == 1 && elapsedMatchTime >= 80.0f) {
+            evaluateSegmentScore();
+            evaluatedSegments = 2;
+        } else if (evaluatedSegments == 2 && elapsedMatchTime >= 120.0f) {
+            evaluateSegmentScore();
+            evaluatedSegments = 3;
+        } else if (evaluatedSegments == 3 && elapsedMatchTime >= 150.0f) {
+            evaluateSegmentScore();
+            evaluatedSegments = 4;
+        }
+    }
+
+    private void evaluateSegmentScore() {
+        if (mcPoints > 0) {
+            cseScore += 1;
+        } else if (mcPoints < 0) {
+            eeeScore += 1;
+        }
+        // Reset MC performance points for the next 40-second segment
+        mcPoints = 0;
     }
 
     private float distanceSegmentToPoint(Vector2 segStart, Vector2 segEnd, Vector2 pt) {
@@ -466,16 +719,57 @@ public class FootballScreen implements Screen {
         state = GameState.MC_KICKING;
     }
 
-    private void handleTimeout() {
-        score -= 1;
-        failedPasses++;
-        showToast("TIME OUT! -1", new Color(1.0f, 0.70f, 0.20f, 1.0f));
+    private void updateCommentary(float delta) {
+        if (crossfadeTimer > 0f) {
+            crossfadeTimer -= delta;
+            if (crossfadeTimer <= 0f) {
+                crossfadeTimer = 0f;
+                previousGroup = null;
+            }
+        }
     }
 
-    private void showToast(String message, Color color) {
-        resultToastMessage = message;
-        resultToastColor = color;
-        resultToastTimer = 1.25f;
+    private void triggerCommentaryBurst(CommentaryType type, Color color) {
+        String[] pool;
+        switch (type) {
+            case SUCCESS:
+                pool = SUCCESS_COMMENTS;
+                break;
+            case FAIL:
+                pool = FAIL_COMMENTS;
+                break;
+            case TIMEOUT:
+            default:
+                pool = TIMEOUT_COMMENTS;
+                break;
+        }
+
+        int count = MathUtils.random(3, 4);
+        List<String> available = new ArrayList<>(Arrays.asList(pool));
+        Collections.shuffle(available);
+
+        if (lastGroupFirstComment != null && available.size() > 1 && available.get(0).equals(lastGroupFirstComment)) {
+            Collections.swap(available, 0, 1);
+        }
+
+        lastGroupFirstComment = available.get(0);
+
+        List<CommentaryItem> items = new ArrayList<>();
+        for (int i = 0; i < Math.min(count, available.size()); i++) {
+            items.add(new CommentaryItem(available.get(i), color));
+        }
+
+        CommentaryGroup group = new CommentaryGroup(items);
+        previousGroup = activeGroup;
+        activeGroup = group;
+        crossfadeTimer = CROSSFADE_DURATION;
+    }
+
+    private void handleTimeout() {
+        mcPoints -= 1;
+        failedPasses++;
+        triggerCommentaryBurst(CommentaryType.TIMEOUT, new Color(1.0f, 0.70f, 0.20f, 1.0f));
+        roundResultTimer = 0.40f;
         state = GameState.ROUND_RESULT;
     }
 
@@ -659,15 +953,6 @@ public class FootballScreen implements Screen {
                 // "MC" Text Label above head
                 hudFont.setColor(FootballPlayer.COLOR_MC_HIGHLIGHT);
                 hudFont.draw(batch, "MC", px - 11f, py + 34f);
-            } else if (p.isCseTeammate()) {
-                hudFont.setColor(new Color(0.85f, 0.95f, 1.0f, 0.95f));
-                hudFont.draw(batch, "CSE", px - 16f, py + 32f);
-            } else if (p.isEeeOpponent()) {
-                hudFont.setColor(new Color(1.0f, 0.95f, 0.40f, 0.95f));
-                hudFont.draw(batch, "EEE", px - 16f, py + 32f);
-            } else if (p.isGoalkeeper()) {
-                hudFont.setColor(FootballPlayer.COLOR_GK);
-                hudFont.draw(batch, "GK", px - 12f, py + 32f);
             }
         }
         batch.setColor(Color.WHITE);
@@ -756,13 +1041,13 @@ public class FootballScreen implements Screen {
         batch.setColor(0.25f, 0.50f, 0.85f, 0.90f);
         batch.draw(whitePixel, 0, 930f, VIEW_W, 3f);
 
-        // Title Badge (Left)
-        titleFont.setColor(new Color(0.35f, 0.85f, 1.0f, 1.0f));
-        titleFont.draw(batch, "CSE vs EEE - FOOTBALL MATCH", 40f, 978f);
-
-        // Score & Pass Stats (Center)
+        // Compact Top-Left Scoreboard (Updated via 40s segment evaluations)
         hudFont.setColor(Color.WHITE);
-        hudFont.draw(batch, String.format("SCORE: %d   (PASSES: %d / %d)", score, successfulPasses, totalRounds > 0 ? (totalRounds - 1) : 0), 720f, 974f);
+        hudFont.draw(batch, String.format("CSE %d  -  %d EEE", cseScore, eeeScore), 40f, 974f);
+
+        // Subtle Secondary MC Points Display (PTS: X)
+        hudFont.setColor(new Color(0.70f, 0.85f, 1.0f, 0.80f));
+        hudFont.draw(batch, String.format("PTS: %d", mcPoints), 280f, 974f);
 
         // Match Timer & Round Timer (Right)
         hudFont.setColor(roundTimer <= 3.0f ? Color.RED : new Color(1.0f, 0.85f, 0.30f, 1.0f));
@@ -799,11 +1084,6 @@ public class FootballScreen implements Screen {
         batch.setColor(powerCol);
         batch.draw(whitePixel, barX, barY, barW, fillH);
 
-        // 40% AIRBORNE THRESHOLD LINE & MARKER
-        float thresholdY = barY + barH * 0.40f;
-        batch.setColor(new Color(1.0f, 0.92f, 0.30f, 1.0f)); // Gold Threshold Line
-        batch.draw(whitePixel, barX - 12f, thresholdY - 1.5f, barW + 24f, 3f);
-
         // Tier Indicator Notches (70% High Flight Notch)
         batch.setColor(1.0f, 1.0f, 1.0f, 0.50f);
         batch.draw(whitePixel, barX, barY + barH * 0.70f, barW, 2f);
@@ -811,9 +1091,6 @@ public class FootballScreen implements Screen {
         // Labels
         hudFont.setColor(Color.WHITE);
         hudFont.draw(batch, String.format("%.0f%%", kickPower * 100f), barX - 6f, barY - 14f);
-
-        hudFont.setColor(new Color(1.0f, 0.90f, 0.30f, 1.0f));
-        hudFont.draw(batch, "40% [AIR THRESHOLD]", barX - 170f, thresholdY + 6f);
 
         hudFont.setColor(powerCol);
         hudFont.draw(batch, powerTier, barX - 16f, barY + fillH + 20f);
@@ -833,22 +1110,54 @@ public class FootballScreen implements Screen {
         batch.setColor(Color.WHITE);
     }
 
-    private void drawToastNotification() {
-        float toastW = 520f;
-        float toastH = 90f;
-        float toastX = (VIEW_W - toastW) / 2f;
-        float toastY = 460f;
+    /**
+     * Renders small sideline commentary speech bubbles stacked vertically near the left touchline margin.
+     */
+    private void drawSidelineCommentary() {
+        if (previousGroup != null && crossfadeTimer > 0f) {
+            float prevAlpha = crossfadeTimer / CROSSFADE_DURATION;
+            renderCommentaryGroup(previousGroup, prevAlpha);
+        }
+        if (activeGroup != null) {
+            float activeAlpha = crossfadeTimer > 0f ? (1.0f - (crossfadeTimer / CROSSFADE_DURATION)) : 1.0f;
+            renderCommentaryGroup(activeGroup, activeAlpha);
+        }
+    }
 
-        batch.setColor(0.06f, 0.08f, 0.12f, 0.94f);
-        batch.draw(whitePixel, toastX, toastY, toastW, toastH);
+    private void renderCommentaryGroup(CommentaryGroup group, float groupAlpha) {
+        if (group == null || group.items == null || group.items.isEmpty() || groupAlpha <= 0f) return;
 
-        batch.setColor(resultToastColor);
-        drawRectBorder(toastX, toastY, toastW, toastH, 3);
+        hudFont.getData().setScale(1.15f);
 
-        toastFont.setColor(resultToastColor);
-        layout.setText(toastFont, resultToastMessage);
-        toastFont.draw(batch, resultToastMessage, toastX + (toastW - layout.width) / 2f, toastY + toastH - 25f);
+        float startX = 30.0f; // Positioned on left touchline margin
+        float startY = FIELD_Y + (FIELD_H / 2.0f) + 80.0f;
+        float lineSpacing = 48.0f;
 
+        for (int i = 0; i < group.items.size(); i++) {
+            CommentaryItem item = group.items.get(i);
+            layout.setText(hudFont, item.text);
+
+            float bubbleW = layout.width + 32.0f;
+            float bubbleH = 40.0f;
+            float bubbleX = startX;
+            float bubbleY = startY - (i * lineSpacing);
+
+            // Translucent Dark Shout Bubble Backing
+            batch.setColor(0.06f, 0.08f, 0.12f, 0.90f * groupAlpha);
+            batch.draw(whitePixel, bubbleX, bubbleY, bubbleW, bubbleH);
+
+            Color borderCol = new Color(item.color.r, item.color.g, item.color.b, item.color.a * groupAlpha);
+            batch.setColor(borderCol);
+            drawRectBorder(bubbleX, bubbleY, bubbleW, bubbleH, 2);
+
+            // Speech bubble pointer facing right toward pitch
+            batch.draw(whitePixel, bubbleX + bubbleW, bubbleY + 14.0f, 7.0f, 10.0f);
+
+            hudFont.setColor(borderCol);
+            hudFont.draw(batch, item.text, bubbleX + 16.0f, bubbleY + 28.0f);
+        }
+
+        hudFont.getData().setScale(1.25f);
         batch.setColor(Color.WHITE);
     }
 
@@ -857,8 +1166,8 @@ public class FootballScreen implements Screen {
         batch.setColor(0f, 0f, 0f, 0.84f);
         batch.draw(whitePixel, 0, 0, VIEW_W, VIEW_H);
 
-        float modalW = 640f;
-        float modalH = 400f;
+        float modalW = 560f;
+        float modalH = 260f;
         float modalX = (VIEW_W - modalW) / 2f;
         float modalY = (VIEW_H - modalH) / 2f;
 
@@ -868,21 +1177,15 @@ public class FootballScreen implements Screen {
         batch.setColor(0.35f, 0.75f, 1.0f, 0.95f);
         drawRectBorder(modalX, modalY, modalW, modalH, 3);
 
-        toastFont.setColor(new Color(1.0f, 0.85f, 0.25f, 1.0f));
-        layout.setText(toastFont, "MATCH OVER");
-        toastFont.draw(batch, "MATCH OVER", modalX + (modalW - layout.width) / 2f, modalY + modalH - 45f);
-
-        hudFont.setColor(Color.WHITE);
-        float startY = modalY + modalH - 120f;
-        hudFont.draw(batch, String.format("FINAL SCORE        :  %d", score), modalX + 130f, startY);
-        hudFont.draw(batch, String.format("SUCCESSFUL PASSES  :  %d", successfulPasses), modalX + 130f, startY - 40f);
-        hudFont.draw(batch, String.format("FAILED PASSES      :  %d", failedPasses), modalX + 130f, startY - 80f);
-        hudFont.draw(batch, String.format("TOTAL ROUNDS PLAYED:  %d", totalRounds), modalX + 130f, startY - 120f);
+        titleFont.setColor(new Color(1.0f, 0.85f, 0.25f, 1.0f));
+        String scoreText = String.format("CSE %d  -  %d EEE", cseScore, eeeScore);
+        layout.setText(titleFont, scoreText);
+        titleFont.draw(batch, scoreText, modalX + (modalW - layout.width) / 2f, modalY + modalH - 75f);
 
         float pulse = (float) Math.sin(animTime * 6f) * 0.25f + 0.75f;
         hudFont.setColor(0.35f, 0.85f, 1.0f, pulse);
         layout.setText(hudFont, "PRESS [ENTER] TO RETURN");
-        hudFont.draw(batch, "PRESS [ENTER] TO RETURN", modalX + (modalW - layout.width) / 2f, modalY + 50f);
+        hudFont.draw(batch, "PRESS [ENTER] TO RETURN", modalX + (modalW - layout.width) / 2f, modalY + 60f);
 
         batch.setColor(Color.WHITE);
     }

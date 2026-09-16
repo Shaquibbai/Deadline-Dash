@@ -52,6 +52,18 @@ public class FootballPlayer {
         this.transitionProgress = 0f;
     }
 
+    public void moveTowards(Vector2 target, float speed, float delta) {
+        if (target == null) return;
+        float dx = target.x - position.x;
+        float dy = target.y - position.y;
+        float dist = (float) Math.sqrt(dx * dx + dy * dy);
+        if (dist > 0f) {
+            float moveDist = Math.min(speed * delta, dist);
+            position.x += (dx / dist) * moveDist;
+            position.y += (dy / dist) * moveDist;
+        }
+    }
+
     public void update(float delta) {
         // 1. Update smooth round redistribution movement lerp
         if (isTransitioning) {
