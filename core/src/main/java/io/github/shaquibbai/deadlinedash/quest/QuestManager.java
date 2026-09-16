@@ -17,8 +17,8 @@ import java.util.Set;
 
 /**
  * Generic data-driven state machine manager for Quests.
- * Manages quest step progression, dynamic NPC interactability, quest dialogue overrides,
- * inventory item rewards upon dialogue completion, and one-time REP rewards.
+ * Manages quest step progression, dynamic NPC interactability, NPC quest markers (Yellow ! / Red ?),
+ * quest dialogue selection overrides, single/multiple inventory item handoffs, and one-time REP rewards.
  */
 public class QuestManager {
     private Quest quest;
@@ -88,7 +88,44 @@ public class QuestManager {
                     int sIndex = stepVal.getInt("stepIndex", steps.size() + 1);
                     String npc = stepVal.getString("npc", "");
                     String dialogueId = stepVal.getString("dialogueId", "");
-                    String reqItem = stepVal.getString("requiredItem", null);
+                    String reminderDialogueId = stepVal.getString("reminderDialogueId", null);
+
+                    List<String> reminderNpcs = new ArrayList<>();
+                    JsonValue remArray = stepVal.get("reminderNpcs");
+                    if (remArray != null && remArray.isArray()) {
+                        for (JsonValue rVal = remArray.child; rVal != null; rVal = rVal.next) {
+                            reminderNpcs.add(rVal.asString());
+                        }
+                    }
+
+                    List<String> reqItems = new ArrayList<>();
+                    JsonValue reqArray = stepVal.get("requiredItems");
+                    if (reqArray != null && reqArray.isArray()) {
+                        for (JsonValue itemVal = reqArray.child; itemVal != null; itemVal = itemVal.next) {
+                            reqItems.add(itemVal.asString());
+                        }
+                    } else if (stepVal.has("requiredItem")) {
+                        String singleReq = stepVal.getString("requiredItem", null);
+                        if (singleReq != null && !singleReq.trim().isEmpty()) {
+                            reqItems.add(singleReq);
+                        }
+                    }
+
+                    List<String> removeItems = new ArrayList<>();
+                    JsonValue removeArray = stepVal.get("removeItems");
+                    if (removeArray != null && removeArray.isArray()) {
+                        for (JsonValue itemVal = removeArray.child; itemVal != null; itemVal = itemVal.next) {
+                            removeItems.add(itemVal.asString());
+                        }
+                    } else if (stepVal.has("removeItem")) {
+                        String singleRem = stepVal.getString("removeItem", null);
+                        if (singleRem != null && !singleRem.trim().isEmpty()) {
+                            removeItems.add(singleRem);
+                        }
+                    }
+
+                    String addItem = stepVal.getString("addItem", null);
+                    String addItemMessage = stepVal.getString("addItemMessage", null);
 
                     List<String> unlockNpcs = new ArrayList<>();
                     JsonValue unlockArray = stepVal.get("unlockNpcs");
@@ -98,9 +135,16 @@ public class QuestManager {
                         }
                     }
 
-                    String addItem = stepVal.getString("addItem", null);
+                    List<String> lockNpcs = new ArrayList<>();
+                    JsonValue lockArray = stepVal.get("lockNpcs");
+                    if (lockArray != null && lockArray.isArray()) {
+                        for (JsonValue lVal = lockArray.child; lVal != null; lVal = lVal.next) {
+                            lockNpcs.add(lVal.asString());
+                        }
+                    }
 
-                    steps.add(new QuestStep(sIndex, npc, dialogueId, reqItem, unlockNpcs, addItem));
+                    steps.add(new QuestStep(sIndex, npc, dialogueId, reminderDialogueId, reminderNpcs,
+                        reqItems, removeItems, addItem, addItemMessage, unlockNpcs, lockNpcs));
                 }
             }
 
@@ -156,7 +200,9 @@ public class QuestManager {
     public boolean isNpcInteractable(String npcName) {
         if (npcName == null) return false;
         String trimmed = npcName.trim();
-        // If NPC is part of quest management, check unlocked set; otherwise default true
+        if (questState == QuestState.COMPLETED) {
+            return false;
+        }
         if (managedNpcs.contains(trimmed)) {
             return interactableNpcs.contains(trimmed);
         }
@@ -168,7 +214,7 @@ public class QuestManager {
      */
     public void syncNpcInteractability(NPC npc) {
         if (npc != null && managedNpcs.contains(npc.getName())) {
-            npc.setInteractable(interactableNpcs.contains(npc.getName()));
+            npc.setInteractable(isNpcInteractable(npc.getName()));
         }
     }
 
@@ -180,6 +226,62 @@ public class QuestManager {
         for (NPC npc : npcs) {
             syncNpcInteractability(npc);
         }
+    }
+
+    private boolean hasAllRequiredItems(QuestStep step, Backpack backpack) {
+        if (!step.hasRequiredItems()) return true;
+        if (backpack == null) return false;
+        for (String reqItemName : step.getRequiredItems()) {
+            if (!backpack.hasItem(new Item(reqItemName))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Determines the current QuestMarker (Yellow ! or Red ?) for an NPC.
+     */
+    public QuestMarker getMarkerForNpc(NPC npc, Backpack backpack) {
+        if (npc == null) return QuestMarker.NONE;
+        return getMarkerForNpc(npc.getName(), backpack);
+    }
+
+    /**
+     * Determines the current QuestMarker (Yellow ! or Red ?) for an NPC by name.
+     */
+    public QuestMarker getMarkerForNpc(String npcName, Backpack backpack) {
+        if (quest == null || questState != QuestState.IN_PROGRESS || npcName == null) {
+            return QuestMarker.NONE;
+        }
+
+        String trimmedNpc = npcName.trim();
+        if (!isNpcInteractable(trimmedNpc)) {
+            return QuestMarker.NONE;
+        }
+
+        QuestStep currentStep = quest.getStep(currentStepIndex);
+        if (currentStep == null) {
+            return QuestMarker.NONE;
+        }
+
+        // Active target NPC for this step
+        if (currentStep.getNpc().equalsIgnoreCase(trimmedNpc)) {
+            if (hasAllRequiredItems(currentStep, backpack)) {
+                return QuestMarker.NEW_INTERACTION; // Yellow !
+            } else {
+                return QuestMarker.REMINDER; // Red ?
+            }
+        }
+
+        // Check if NPC is in reminder list for active step
+        for (String remNpc : currentStep.getReminderNpcs()) {
+            if (remNpc.equalsIgnoreCase(trimmedNpc)) {
+                return QuestMarker.REMINDER; // Red ?
+            }
+        }
+
+        return QuestMarker.NONE;
     }
 
     /**
@@ -198,17 +300,23 @@ public class QuestManager {
             return defaultDialogueId;
         }
 
+        String trimmedNpc = npcName.trim();
         QuestStep currentStep = quest.getStep(currentStepIndex);
-        if (currentStep != null && currentStep.getNpc().equalsIgnoreCase(npcName.trim())) {
-            if (currentStep.hasRequiredItem()) {
-                Item item = new Item(currentStep.getRequiredItem());
-                if (backpack != null && backpack.hasItem(item)) {
-                    return currentStep.getDialogueId();
-                } else {
-                    return defaultDialogueId;
-                }
-            } else {
+        if (currentStep == null) {
+            return defaultDialogueId;
+        }
+
+        if (currentStep.getNpc().equalsIgnoreCase(trimmedNpc)) {
+            if (hasAllRequiredItems(currentStep, backpack)) {
                 return currentStep.getDialogueId();
+            } else {
+                return currentStep.hasReminderDialogue() ? currentStep.getReminderDialogueId() : defaultDialogueId;
+            }
+        }
+
+        for (String remNpc : currentStep.getReminderNpcs()) {
+            if (remNpc.equalsIgnoreCase(trimmedNpc) && currentStep.hasReminderDialogue()) {
+                return currentStep.getReminderDialogueId();
             }
         }
 
@@ -217,40 +325,63 @@ public class QuestManager {
 
     /**
      * Evaluates dialogue completion and transitions quest step state when dialogue finishes.
-     * Rewards (items/REP) are awarded strictly when dialogue finishes.
+     * Only designated NEW_INTERACTION dialogues advance quest state; reminder dialogues are informational only.
+     * Returns notification toast message string if an item was awarded, or null otherwise.
      */
-    public boolean onDialogueCompleted(String dialogueId, String npcName, Backpack backpack, RepSystem repSystem) {
+    public String onDialogueCompleted(String dialogueId, String npcName, Backpack backpack, RepSystem repSystem) {
         if (quest == null || questState != QuestState.IN_PROGRESS || dialogueId == null || npcName == null) {
-            return false;
+            return null;
         }
 
-        QuestStep step = quest.getStep(currentStepIndex);
-        if (step == null) return false;
+        String trimmedDialogue = dialogueId.trim();
+        String trimmedNpc = npcName.trim();
 
-        if (step.getDialogueId().equalsIgnoreCase(dialogueId.trim()) && step.getNpc().equalsIgnoreCase(npcName.trim())) {
-            if (step.hasRequiredItem()) {
-                Item req = new Item(step.getRequiredItem());
-                if (backpack == null || !backpack.hasItem(req)) {
-                    return false;
-                }
+        QuestStep step = quest.getStep(currentStepIndex);
+        if (step == null) return null;
+
+        // Verify completed dialogue is the active step's designated NEW_INTERACTION dialogue
+        if (step.getDialogueId().equalsIgnoreCase(trimmedDialogue) && step.getNpc().equalsIgnoreCase(trimmedNpc)) {
+            if (!hasAllRequiredItems(step, backpack)) {
+                return null;
             }
 
             // Step completed!
-            if (step.hasAddItem() && backpack != null) {
-                backpack.addItem(new Item(step.getAddItem()));
-                System.out.printf("[QUEST] Added item '%s' to backpack upon completing dialogue '%s'%n", step.getAddItem(), dialogueId);
+            // 1. Remove consumed items if applicable
+            if (step.hasRemoveItems() && backpack != null) {
+                for (String remItemName : step.getRemoveItems()) {
+                    backpack.removeItem(new Item(remItemName));
+                    System.out.printf("[QUEST] Removed consumed item '%s' from backpack upon completing dialogue '%s'%n",
+                        remItemName, trimmedDialogue);
+                }
             }
 
+            // 2. Add rewarded item if applicable
+            String feedbackMsg = null;
+            if (step.hasAddItem() && backpack != null) {
+                backpack.addItem(new Item(step.getAddItem()));
+                feedbackMsg = step.getAddItemMessage() != null ? step.getAddItemMessage() : (step.getAddItem() + " added to backpack");
+                System.out.printf("[QUEST] Added item '%s' to backpack upon completing dialogue '%s'%n",
+                    step.getAddItem(), trimmedDialogue);
+            }
+
+            // 3. Apply NPC unlocks and locks
             for (String unlock : step.getUnlockNpcs()) {
                 interactableNpcs.add(unlock.trim());
                 System.out.printf("[QUEST] Unlocked NPC '%s' for interaction%n", unlock);
             }
+            for (String lock : step.getLockNpcs()) {
+                interactableNpcs.remove(lock.trim());
+                System.out.printf("[QUEST] Disabled NPC '%s' from further interaction%n", lock);
+            }
 
+            // 4. Advance step index
             currentStepIndex++;
             System.out.printf("[QUEST] Advanced Quest '%s' to step %d%n", quest.getId(), currentStepIndex);
 
+            // 5. Check quest completion
             if (currentStepIndex > quest.getSteps().size()) {
                 this.questState = QuestState.COMPLETED;
+                this.interactableNpcs.clear(); // Disable all quest interactions
                 System.out.printf("[QUEST] Quest '%s' COMPLETED!%n", quest.getId());
                 if (repSystem != null && quest.getRewardRep() > 0) {
                     repSystem.addRep(quest.getRewardRep());
@@ -259,9 +390,10 @@ public class QuestManager {
                 }
             }
 
-            return true;
+            return feedbackMsg;
         }
 
-        return false;
+        // Informational reminder dialogues do NOT advance steps or modify inventory
+        return null;
     }
 }

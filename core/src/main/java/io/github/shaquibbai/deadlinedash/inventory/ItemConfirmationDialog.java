@@ -61,6 +61,15 @@ public class ItemConfirmationDialog {
     }
 
     /**
+     * Displays a temporary toast notification overlay on screen.
+     */
+    public void showToast(String message) {
+        if (message == null || message.trim().isEmpty()) return;
+        this.toastMessage = message.trim();
+        this.toastTimer = TOAST_DURATION;
+    }
+
+    /**
      * Updates input handling and notification timers.
      */
     public void update(float delta, Vector3 mousePos, boolean justClicked) {

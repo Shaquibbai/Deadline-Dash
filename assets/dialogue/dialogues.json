@@ -49,28 +49,166 @@
     ]
   },
 
-  "Rafat_intro": {
+"Rafat_intro": {
+  "lines": [
+    {
+      "speaker": "npc",
+      "text": "Hey, Shaquib. What's up?"
+    },
+    {
+      "speaker": "player",
+      "text": "Don't hey me, buddy. Have you done your part?"
+    },
+    {
+      "speaker": "npc",
+      "text": "What part are you talking about?"
+    },
+    {
+      "speaker": "player",
+      "text": "Huhh??? Man, the project deadline's been shifted to 2 days. You didn't even check my messages!!"
+    },
+    {
+      "speaker": "npc",
+      "text": "Sorry bruv, But remember I told about this girl I met some time ago, Sofia. And you know it's my first love."
+    },
+    {
+      "speaker": "player",
+      "text": "Look, I'm happy for your love and all that, but you need to work, bruv."
+    },
+    {
+      "speaker": "npc",
+      "text": "I would love to start as I am free after the classes. But...."
+    },
+    {
+      "speaker": "player",
+      "text": "But what?"
+    },
+    {
+      "speaker": "npc",
+      "text": "You see, my laptop's at her place. Her laptop broke a few days ago and she needed to work on her project."
+    },
+    {
+      "speaker": "player",
+      "text": "Of course. You gave your laptop to your girlfriend to finish her project. While you don't even know the deadline of your own project. The irony truly amazes me"
+    },
+    {
+      "speaker": "npc",
+      "text": "Well, yeah, it's my fault, man. I completely forgot. But her work is finished, she told me yesterday."
+    },
+    {
+      "speaker": "player",
+      "text": "Then go grab the laptop from her and start working."
+    },
+    {
+      "speaker": "npc",
+      "text": "Well, about that, I can't go there!"
+    },
+    {
+      "speaker": "player",
+      "text": "What? why?"
+    },
+    {
+      "speaker": "npc",
+      "text": "Well, you see, I have almost zero attendance in the classes and I don't wanna be seen with a girl on campus. So..."
+    },
+    {
+      "speaker": "player",
+      "text": "So YOU WANT ME TO GET YOUR LAPTOP FROM HER!!!!!!!"
+    },
+    {
+      "speaker": "npc",
+      "text": "Please, for old times' sake???"
+    },
+    {
+      "speaker": "player",
+      "text": "You don't even see my texts, and you say for old times' sake…………. Whatever, where is she?"
+    },
+    {
+      "speaker": "npc",
+      "text": "Well, you'll find her at the roadside of female hall."
+    },
+    {
+      "speaker": "player",
+      "text": "And when I ask, she will give it, right? You talked to her about it, right?"
+    },
+    {
+      "speaker": "npc",
+      "text": "Yes, yes, she'll give it to you right away. Just...uhh... You see, she might send you off for some work, and I said yes!"
+    },
+    {
+      "speaker": "player",
+      "text": "You WANT ME TO RUN ERRANDS FOR YOUR GIRLFRIEND!! THIS JUST GETS BETTER AND BETTER!!!!"
+    },
+    {
+      "speaker": "npc",
+      "text": "Please don't say anything to her. I swear I owe you one."
+    },
+    {
+      "speaker": "player",
+      "text": "Oh, you owe me big time, buddy."
+    }
+  ]
+},
+
+  "Rafat_waiting": {
     "lines": [
       {
         "speaker": "npc",
-        "text": "Hey! I left my laptop with Sofia. Could you please ask her for it?"
+        "text": "Did you get my laptop from Sofia yet? She is at the gate of female hall"
       },
       {
         "speaker": "player",
-        "text": "Sure, I'll go talk to Sofia."
+        "text": "I am on it."
       }
     ]
   },
 
-  "Sofia_intro": {
+"Sofia_intro": {
+  "lines": [
+    {
+      "speaker": "npc",
+      "text": "Hey, you must be Shaquib."
+    },
+    {
+      "speaker": "player",
+      "text": "Hey, and I presume you are Sofia, Rafat's girlfriend?"
+    },
+    {
+      "speaker": "npc",
+      "text": "Hushhh, you don't want everybody to know we're dating!!!!!"
+    },
+    {
+      "speaker": "player",
+      "text": "So give me the laptop now!??"
+    },
+    {
+      "speaker": "npc",
+      "text": "Ah, about that... it is in my room. You see, I just got back from classes."
+    },
+    {
+      "speaker": "player",
+      "text": "Well, then go and fetch it!!!"
+    },
+    {
+      "speaker": "npc",
+      "text": "Yeah, yeah, I am going. Meanwhile, can you please bring the ordered pizza from CDS, pretty please?"
+    },
+    {
+      "speaker": "player",
+      "text": "\"There you go, the errands.\""
+    },
+    {
+      "speaker": "player",
+      "text": "Yeah, yeah, I'll go, but be sure to bring that laptop."
+    }
+  ]
+},
+
+  "Sofia_waiting": {
     "lines": [
       {
         "speaker": "npc",
-        "text": "I have Rafat's laptop, but I'm starving. Get me a Pizza from the Shopkeeper at CDS first!"
-      },
-      {
-        "speaker": "player",
-        "text": "Alright, heading to CDS now."
+        "text": "Did you get the pizza yet?"
       }
     ]
   },
@@ -79,11 +217,31 @@
     "lines": [
       {
         "speaker": "npc",
-        "text": "Welcome to CDS! Here is a fresh hot Pizza for you."
+        "text": "Hey, what do you need? We have pizza, burgers, sandwiches—"
       },
       {
         "speaker": "player",
-        "text": "Thanks! This is just what Sofia asked for."
+        "text": "Hey man, just wait a bit. I was told that there was an order for a pizza."
+      },
+      {
+        "speaker": "npc",
+        "text": "Ohh, you must be a delivery boy. Are you here to pick it up?"
+      },
+      {
+        "speaker": "player",
+        "text": "\"Delivery boy!!!!!!\""
+      },
+      {
+        "speaker": "player",
+        "text": "Apparently, yes. Can you bring me the pizza?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Yeah, sure man. Here you go. The money has already been paid. Thanks for the order, and of course, for picking it up!"
+      },
+      {
+        "speaker": "player",
+        "text": "Can't say the gratitude is likewise, my friend!"
       }
     ]
   },
@@ -92,11 +250,52 @@
     "lines": [
       {
         "speaker": "player",
-        "text": "Here's the Pizza from CDS!"
+        "text": "Here's the pizza. Now can I have that laptop?"
       },
       {
         "speaker": "npc",
-        "text": "Awesome! Thank you so much! Here is Rafat's Laptop."
+        "text": "Well, yes, here it is... But wait, can you do something else for me, please?"
+      },
+      {
+        "speaker": "player",
+        "text": "I assume you won't take no for an answer! So just tell me what to do?"
+      },
+      {
+        "speaker": "npc",
+        "text": "You see, tomorrow's our one-month anniversary. So I ordered a gift for Rafat."
+      },
+      {
+        "speaker": "player",
+        "text": "So?"
+      },
+      {
+        "speaker": "npc",
+        "text": "So, can you pick up the gift and give it to him? The delivery man should be in front of the male hall. Here's the order ID. Give this to the delivery man and pick up the gift."
+      },
+      {
+        "speaker": "player",
+        "text": "What has become of my life?"
+      }
+    ]
+  },
+
+  "Deliveryman_intro": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Assalamualaikum sir, did you have an order?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Well, yes! The order ID is #Ord-6776."
+      },
+      {
+        "speaker": "player",
+        "text": "Here's your product, sir. Thank you for ordering. Hope you have a nice day."
+      },
+      {
+        "speaker": "npc",
+        "text": "Yeah man, I wish!"
       }
     ]
   },
@@ -104,12 +303,28 @@
   "Rafat_laptop": {
     "lines": [
       {
-        "speaker": "player",
-        "text": "Here is your Laptop!"
+        "speaker": "npc",
+        "text": "Hey man. You're back."
       },
       {
         "speaker": "npc",
-        "text": "Thank you so much! You really saved me!"
+        "text": "Don't say a word. Here's your laptop, so go to work. And here's your one-month anniversary gift."
+      },
+      {
+        "speaker": "player",
+        "text": "Oh, she remembered! My honeybee, my-"
+      },
+      {
+        "speaker": "npc",
+        "text": "Ohh, stop it! Just take these and start working. I can't take this cheesiness anymore."
+      },
+      {
+        "speaker": "player",
+        "text": "Yeah man, I'll go now. Thanks again."
+      },
+      {
+        "speaker": "npc",
+        "text": "You better finish everything without causing any more trouble... and learn to read everyone's texts!"
       }
     ]
   }

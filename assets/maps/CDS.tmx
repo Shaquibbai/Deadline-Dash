@@ -143,7 +143,7 @@
   <object id="5" name="CDSInsideBack_to_CDSBack" x="1870" y="1892" width="94" height="274"/>
  </objectgroup>
  <objectgroup id="5" name="NPCs">
-  <object id="6" type="NPC" x="1427.27" y="2351.52" width="103.03" height="233.333">
+  <object id="6" type="NPC" x="1445.94" y="2483.52" width="103.03" height="79.9997">
    <properties>
     <property name="dialogue" value="Shopkeeper_intro"/>
     <property name="idleAnimation" type="bool" value="false"/>

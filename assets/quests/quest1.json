@@ -1,7 +1,7 @@
 {
   "id": "Quest1",
   "name": "Quest 1",
-  "description": "Deliver the laptop to Rafat",
+  "description": "Deliver the laptop and gift package to Rafat",
   "rewardRep": 25,
   "initialInteractableNpcs": ["Rafat"],
   "steps": [
@@ -15,26 +15,49 @@
       "stepIndex": 2,
       "npc": "Sofia",
       "dialogueId": "Sofia_intro",
+      "reminderDialogueId": "Rafat_waiting",
+      "reminderNpcs": ["Rafat"],
       "unlockNpcs": ["Shopkeeper"]
     },
     {
       "stepIndex": 3,
       "npc": "Shopkeeper",
       "dialogueId": "Shopkeeper_intro",
-      "addItem": "Pizza"
+      "addItem": "Pizza",
+      "addItemMessage": "Pizza added to backpack",
+      "reminderDialogueId": "Sofia_waiting",
+      "reminderNpcs": ["Rafat", "Sofia"],
+      "lockNpcs": ["Shopkeeper"]
     },
     {
       "stepIndex": 4,
       "npc": "Sofia",
       "dialogueId": "Sofia_pizza",
+      "reminderDialogueId": "Sofia_waiting",
       "requiredItem": "Pizza",
-      "addItem": "Laptop"
+      "removeItem": "Pizza",
+      "addItem": "Laptop",
+      "addItemMessage": "Laptop added to backpack",
+      "unlockNpcs": ["Deliveryman"],
+      "reminderNpcs": ["Rafat"]
     },
     {
       "stepIndex": 5,
+      "npc": "Deliveryman",
+      "dialogueId": "Deliveryman_intro",
+      "addItem": "Gift",
+      "addItemMessage": "Gift added to backpack",
+      "reminderDialogueId": "Rafat_waiting",
+      "reminderNpcs": ["Rafat"],
+      "lockNpcs": ["Deliveryman"]
+    },
+    {
+      "stepIndex": 6,
       "npc": "Rafat",
       "dialogueId": "Rafat_laptop",
-      "requiredItem": "Laptop"
+      "reminderDialogueId": "Rafat_waiting",
+      "requiredItems": ["Laptop", "Gift"],
+      "removeItems": ["Laptop", "Gift"]
     }
   ]
 }

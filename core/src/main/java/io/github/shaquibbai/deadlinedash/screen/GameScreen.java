@@ -111,7 +111,10 @@ public class GameScreen implements Screen {
         questManager = new QuestManager(AssetPaths.QUEST_1);
         dialogueManager.setCompletionListener((dialogueId, npc) -> {
             String npcName = npc != null ? npc.getName() : "";
-            questManager.onDialogueCompleted(dialogueId, npcName, backpack, repSystem);
+            String toastMsg = questManager.onDialogueCompleted(dialogueId, npcName, backpack, repSystem);
+            if (toastMsg != null && !toastMsg.isEmpty()) {
+                itemConfirmationDialog.showToast(toastMsg);
+            }
             questManager.syncMapNpcs(mapManager.getNpcs());
         });
         questManager.syncMapNpcs(mapManager.getNpcs());
@@ -405,11 +408,12 @@ public class GameScreen implements Screen {
         // 1. Render Background Tiled map layers (ground, paths, walls, structures)
         mapManager.renderBackground(camera);
 
-        // 2. Render entities (NPCs & Player)
+        // 2. Render entities (NPCs, Player, & Quest Markers)
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         mapManager.renderNPCs(batch);
         player.render(batch);
+        renderQuestMarkers(batch);
         batch.end();
 
         // 3. Render Foreground Tiled map layer (roofs, tree canopies, overhangs)
@@ -637,6 +641,33 @@ public class GameScreen implements Screen {
             }
         }
         return closest;
+    }
+
+    private void renderQuestMarkers(SpriteBatch batch) {
+        if (questManager == null) return;
+        GlyphLayout layout = new GlyphLayout();
+
+        for (NPC npc : mapManager.getNpcs()) {
+            io.github.shaquibbai.deadlinedash.quest.QuestMarker marker = questManager.getMarkerForNpc(npc, backpack);
+            if (marker == io.github.shaquibbai.deadlinedash.quest.QuestMarker.NONE) {
+                continue;
+            }
+
+            String symbol = marker == io.github.shaquibbai.deadlinedash.quest.QuestMarker.NEW_INTERACTION ? "!" : "?";
+            Color markerColor = marker == io.github.shaquibbai.deadlinedash.quest.QuestMarker.NEW_INTERACTION
+                ? new Color(1.0f, 0.88f, 0.15f, 1.0f) // Bright Yellow
+                : new Color(1.0f, 0.25f, 0.25f, 1.0f); // Bright Red
+
+            float centerX = npc.getCenterX();
+            float topY = npc.getY() + npc.getHeight() + 20f;
+
+            debugFont.getData().setScale(4.5f);
+            debugFont.setColor(markerColor);
+            layout.setText(debugFont, symbol);
+            debugFont.draw(batch, symbol, centerX - (layout.width / 2f), topY + layout.height);
+            debugFont.getData().setScale(1.2f); // Reset scale
+        }
+        batch.setColor(Color.WHITE);
     }
 
     private void returnToTitleScreen() {

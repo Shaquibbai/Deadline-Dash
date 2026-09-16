@@ -17,7 +17,7 @@ class QuestManagerTest {
     private static final String QUEST1_JSON = "{\n" +
         "  \"id\": \"Quest1\",\n" +
         "  \"name\": \"Quest 1\",\n" +
-        "  \"description\": \"Deliver the laptop to Rafat\",\n" +
+        "  \"description\": \"Deliver the laptop and gift package to Rafat\",\n" +
         "  \"rewardRep\": 25,\n" +
         "  \"initialInteractableNpcs\": [\"Rafat\"],\n" +
         "  \"steps\": [\n" +
@@ -31,26 +31,49 @@ class QuestManagerTest {
         "      \"stepIndex\": 2,\n" +
         "      \"npc\": \"Sofia\",\n" +
         "      \"dialogueId\": \"Sofia_intro\",\n" +
+        "      \"reminderDialogueId\": \"Rafat_waiting\",\n" +
+        "      \"reminderNpcs\": [\"Rafat\"],\n" +
         "      \"unlockNpcs\": [\"Shopkeeper\"]\n" +
         "    },\n" +
         "    {\n" +
         "      \"stepIndex\": 3,\n" +
         "      \"npc\": \"Shopkeeper\",\n" +
         "      \"dialogueId\": \"Shopkeeper_intro\",\n" +
-        "      \"addItem\": \"Pizza\"\n" +
+        "      \"addItem\": \"Pizza\",\n" +
+        "      \"addItemMessage\": \"Pizza added to backpack\",\n" +
+        "      \"reminderDialogueId\": \"Sofia_waiting\",\n" +
+        "      \"reminderNpcs\": [\"Rafat\", \"Sofia\"],\n" +
+        "      \"lockNpcs\": [\"Shopkeeper\"]\n" +
         "    },\n" +
         "    {\n" +
         "      \"stepIndex\": 4,\n" +
         "      \"npc\": \"Sofia\",\n" +
         "      \"dialogueId\": \"Sofia_pizza\",\n" +
+        "      \"reminderDialogueId\": \"Sofia_waiting\",\n" +
         "      \"requiredItem\": \"Pizza\",\n" +
-        "      \"addItem\": \"Laptop\"\n" +
+        "      \"removeItem\": \"Pizza\",\n" +
+        "      \"addItem\": \"Laptop\",\n" +
+        "      \"addItemMessage\": \"Laptop added to backpack\",\n" +
+        "      \"unlockNpcs\": [\"Deliveryman\"],\n" +
+        "      \"reminderNpcs\": [\"Rafat\"]\n" +
         "    },\n" +
         "    {\n" +
         "      \"stepIndex\": 5,\n" +
+        "      \"npc\": \"Deliveryman\",\n" +
+        "      \"dialogueId\": \"Deliveryman_intro\",\n" +
+        "      \"addItem\": \"Gift\",\n" +
+        "      \"addItemMessage\": \"Gift added to backpack\",\n" +
+        "      \"reminderDialogueId\": \"Rafat_waiting\",\n" +
+        "      \"reminderNpcs\": [\"Rafat\"],\n" +
+        "      \"lockNpcs\": [\"Deliveryman\"]\n" +
+        "    },\n" +
+        "    {\n" +
+        "      \"stepIndex\": 6,\n" +
         "      \"npc\": \"Rafat\",\n" +
         "      \"dialogueId\": \"Rafat_laptop\",\n" +
-        "      \"requiredItem\": \"Laptop\"\n" +
+        "      \"reminderDialogueId\": \"Rafat_waiting\",\n" +
+        "      \"requiredItems\": [\"Laptop\", \"Gift\"],\n" +
+        "      \"removeItems\": [\"Laptop\", \"Gift\"]\n" +
         "    }\n" +
         "  ]\n" +
         "}";
@@ -68,109 +91,138 @@ class QuestManagerTest {
     }
 
     @Test
-    @DisplayName("Initial Quest 1 state: Rafat interactable, Sofia and Shopkeeper locked")
-    void testInitialQuestState() {
-        assertEquals(QuestState.IN_PROGRESS, questManager.getQuestState());
-        assertEquals(1, questManager.getCurrentStepIndex());
-
-        assertTrue(questManager.isNpcInteractable("Rafat"));
-        assertFalse(questManager.isNpcInteractable("Sofia"));
-        assertFalse(questManager.isNpcInteractable("Shopkeeper"));
+    @DisplayName("Initial state: Deliveryman is locked, Rafat has yellow !")
+    void testInitialStateDeliverymanLocked() {
+        assertFalse(questManager.isNpcInteractable("Deliveryman"));
+        assertEquals(QuestMarker.NONE, questManager.getMarkerForNpc("Deliveryman", backpack));
+        assertEquals(QuestMarker.NEW_INTERACTION, questManager.getMarkerForNpc("Rafat", backpack));
     }
 
     @Test
-    @DisplayName("Step 1 completion (Rafat_intro) unlocks Sofia")
-    void testStep1CompletesAndUnlocksSofia() {
-        boolean handled = questManager.onDialogueCompleted("Rafat_intro", "Rafat", backpack, repSystem);
-        assertTrue(handled);
-        assertEquals(2, questManager.getCurrentStepIndex());
-
-        assertTrue(questManager.isNpcInteractable("Rafat"));
-        assertTrue(questManager.isNpcInteractable("Sofia"));
-        assertFalse(questManager.isNpcInteractable("Shopkeeper"));
-    }
-
-    @Test
-    @DisplayName("Step 2 completion (Sofia_intro) unlocks Shopkeeper")
-    void testStep2CompletesAndUnlocksShopkeeper() {
-        questManager.onDialogueCompleted("Rafat_intro", "Rafat", backpack, repSystem);
-
-        boolean handled = questManager.onDialogueCompleted("Sofia_intro", "Sofia", backpack, repSystem);
-        assertTrue(handled);
-        assertEquals(3, questManager.getCurrentStepIndex());
-
-        assertTrue(questManager.isNpcInteractable("Shopkeeper"));
-    }
-
-    @Test
-    @DisplayName("Step 3 completion (Shopkeeper_intro) adds Pizza to Backpack upon dialogue finish")
-    void testStep3AddsPizzaToBackpack() {
+    @DisplayName("Completing Sofia_pizza unlocks Deliveryman with Yellow !")
+    void testSofiaPizzaUnlocksDeliveryman() {
         questManager.onDialogueCompleted("Rafat_intro", "Rafat", backpack, repSystem);
         questManager.onDialogueCompleted("Sofia_intro", "Sofia", backpack, repSystem);
-
-        assertFalse(backpack.hasItem(new Item("Pizza")));
-
-        boolean handled = questManager.onDialogueCompleted("Shopkeeper_intro", "Shopkeeper", backpack, repSystem);
-        assertTrue(handled);
-        assertEquals(4, questManager.getCurrentStepIndex());
-
-        assertTrue(backpack.hasItem(new Item("Pizza")));
-    }
-
-    @Test
-    @DisplayName("Step 4 dialogue resolution and completion: requires Pizza, adds Laptop, retains Pizza")
-    void testStep4RequiresPizzaAndAddsLaptop() {
-        questManager.onDialogueCompleted("Rafat_intro", "Rafat", backpack, repSystem);
-        questManager.onDialogueCompleted("Sofia_intro", "Sofia", backpack, repSystem);
-
-        // Before Step 3 (no Pizza in backpack)
-        assertEquals("Sofia_intro", questManager.getDialogueForNpc("Sofia", "Sofia_intro", backpack));
-        assertFalse(questManager.onDialogueCompleted("Sofia_pizza", "Sofia", backpack, repSystem));
-
-        // Complete Step 3 (add Pizza)
         questManager.onDialogueCompleted("Shopkeeper_intro", "Shopkeeper", backpack, repSystem);
-        assertTrue(backpack.hasItem(new Item("Pizza")));
 
-        // Now step 4 eligible
-        assertEquals("Sofia_pizza", questManager.getDialogueForNpc("Sofia", "Sofia_intro", backpack));
+        assertFalse(questManager.isNpcInteractable("Deliveryman"));
 
-        boolean handled = questManager.onDialogueCompleted("Sofia_pizza", "Sofia", backpack, repSystem);
-        assertTrue(handled);
-        assertEquals(5, questManager.getCurrentStepIndex());
+        String toast = questManager.onDialogueCompleted("Sofia_pizza", "Sofia", backpack, repSystem);
+        assertEquals("Laptop added to backpack", toast);
 
+        // Pizza removed, Laptop added
+        assertFalse(backpack.hasItem(new Item("Pizza")));
         assertTrue(backpack.hasItem(new Item("Laptop")));
-        assertTrue(backpack.hasItem(new Item("Pizza")));
+
+        // Deliveryman unlocked with Yellow !
+        assertTrue(questManager.isNpcInteractable("Deliveryman"));
+        assertEquals(QuestMarker.NEW_INTERACTION, questManager.getMarkerForNpc("Deliveryman", backpack));
+        assertEquals("Deliveryman_intro", questManager.getDialogueForNpc("Deliveryman", "Deliveryman_intro", backpack));
     }
 
     @Test
-    @DisplayName("Step 5 completion (Rafat_laptop) completes Quest 1 and awards +25 REP exactly once")
-    void testStep5CompletesQuestAndAwardsRepOnce() {
+    @DisplayName("Deliveryman_intro adds Gift once, shows toast, locks Deliveryman, and gives Rafat Yellow !")
+    void testDeliverymanIntroGivesGiftAndLocksDeliveryman() {
         questManager.onDialogueCompleted("Rafat_intro", "Rafat", backpack, repSystem);
         questManager.onDialogueCompleted("Sofia_intro", "Sofia", backpack, repSystem);
         questManager.onDialogueCompleted("Shopkeeper_intro", "Shopkeeper", backpack, repSystem);
         questManager.onDialogueCompleted("Sofia_pizza", "Sofia", backpack, repSystem);
 
-        assertEquals(20, repSystem.getRep());
-        assertEquals("Rafat_laptop", questManager.getDialogueForNpc("Rafat", "Rafat_intro", backpack));
+        assertFalse(backpack.hasItem(new Item("Gift")));
 
-        boolean completed = questManager.onDialogueCompleted("Rafat_laptop", "Rafat", backpack, repSystem);
-        assertTrue(completed);
+        String toast = questManager.onDialogueCompleted("Deliveryman_intro", "Deliveryman", backpack, repSystem);
+        assertEquals("Gift added to backpack", toast);
+
+        assertTrue(backpack.hasItem(new Item("Gift")));
+        assertTrue(backpack.hasItem(new Item("Laptop")));
+
+        // Deliveryman disabled immediately
+        assertFalse(questManager.isNpcInteractable("Deliveryman"));
+        assertEquals(QuestMarker.NONE, questManager.getMarkerForNpc("Deliveryman", backpack));
+
+        // Rafat now has Yellow ! because both Laptop and Gift are present
+        assertEquals(QuestMarker.NEW_INTERACTION, questManager.getMarkerForNpc("Rafat", backpack));
+        assertEquals("Rafat_laptop", questManager.getDialogueForNpc("Rafat", "Rafat_intro", backpack));
+    }
+
+    @Test
+    @DisplayName("Rafat cannot complete final step with missing Laptop or missing Gift")
+    void testRafatCannotCompleteWithMissingItem() {
+        questManager.onDialogueCompleted("Rafat_intro", "Rafat", backpack, repSystem);
+        questManager.onDialogueCompleted("Sofia_intro", "Sofia", backpack, repSystem);
+        questManager.onDialogueCompleted("Shopkeeper_intro", "Shopkeeper", backpack, repSystem);
+        questManager.onDialogueCompleted("Sofia_pizza", "Sofia", backpack, repSystem);
+        questManager.onDialogueCompleted("Deliveryman_intro", "Deliveryman", backpack, repSystem);
+
+        // Remove Laptop to test missing Laptop
+        backpack.removeItem(new Item("Laptop"));
+
+        assertEquals(QuestMarker.REMINDER, questManager.getMarkerForNpc("Rafat", backpack));
+        assertEquals("Rafat_waiting", questManager.getDialogueForNpc("Rafat", "Rafat_intro", backpack));
+
+        String toast = questManager.onDialogueCompleted("Rafat_laptop", "Rafat", backpack, repSystem);
+        assertNull(toast);
+        assertFalse(questManager.isQuestCompleted());
+        assertEquals(20, repSystem.getRep());
+
+        // Restore Laptop, remove Gift to test missing Gift
+        backpack.addItem(new Item("Laptop"));
+        backpack.removeItem(new Item("Gift"));
+
+        assertEquals(QuestMarker.REMINDER, questManager.getMarkerForNpc("Rafat", backpack));
+        assertEquals("Rafat_waiting", questManager.getDialogueForNpc("Rafat", "Rafat_intro", backpack));
+
+        toast = questManager.onDialogueCompleted("Rafat_laptop", "Rafat", backpack, repSystem);
+        assertNull(toast);
+        assertFalse(questManager.isQuestCompleted());
+        assertEquals(20, repSystem.getRep());
+    }
+
+    @Test
+    @DisplayName("Rafat_laptop completes quest when both Laptop and Gift are present, removing both and awarding +25 REP once")
+    void testRafatFinalStepCompletion() {
+        questManager.onDialogueCompleted("Rafat_intro", "Rafat", backpack, repSystem);
+        questManager.onDialogueCompleted("Sofia_intro", "Sofia", backpack, repSystem);
+        questManager.onDialogueCompleted("Shopkeeper_intro", "Shopkeeper", backpack, repSystem);
+        questManager.onDialogueCompleted("Sofia_pizza", "Sofia", backpack, repSystem);
+        questManager.onDialogueCompleted("Deliveryman_intro", "Deliveryman", backpack, repSystem);
+
+        assertTrue(backpack.hasItem(new Item("Laptop")));
+        assertTrue(backpack.hasItem(new Item("Gift")));
+        assertEquals(20, repSystem.getRep());
+
+        questManager.onDialogueCompleted("Rafat_laptop", "Rafat", backpack, repSystem);
+
+        // BOTH items MUST be removed
+        assertFalse(backpack.hasItem(new Item("Laptop")));
+        assertFalse(backpack.hasItem(new Item("Gift")));
+
         assertTrue(questManager.isQuestCompleted());
         assertEquals(45, repSystem.getRep()); // 20 + 25
 
-        // Subsequent interaction does not award REP again
-        boolean secondCall = questManager.onDialogueCompleted("Rafat_laptop", "Rafat", backpack, repSystem);
-        assertFalse(secondCall);
+        // All markers hidden & quest interactions disabled
+        assertEquals(QuestMarker.NONE, questManager.getMarkerForNpc("Rafat", backpack));
+        assertEquals(QuestMarker.NONE, questManager.getMarkerForNpc("Sofia", backpack));
+        assertEquals(QuestMarker.NONE, questManager.getMarkerForNpc("Shopkeeper", backpack));
+        assertEquals(QuestMarker.NONE, questManager.getMarkerForNpc("Deliveryman", backpack));
+
+        assertFalse(questManager.isNpcInteractable("Rafat"));
+        assertFalse(questManager.isNpcInteractable("Sofia"));
+        assertFalse(questManager.isNpcInteractable("Shopkeeper"));
+        assertFalse(questManager.isNpcInteractable("Deliveryman"));
+
+        // Repeated completion attempt gives no additional REP or items
+        questManager.onDialogueCompleted("Rafat_laptop", "Rafat", backpack, repSystem);
         assertEquals(45, repSystem.getRep());
     }
 
     @Test
-    @DisplayName("Integration with DialogueManager: Rewards execute when dialogue finishes completely")
-    void testDialogueManagerIntegration() {
+    @DisplayName("Integration with DialogueManager: Rewards execute only when Deliveryman_intro finishes completely")
+    void testDialogueManagerDeliverymanCompletion() {
         String testDialogueJson = "{\n" +
-            "  \"Shopkeeper_intro\": {\n" +
+            "  \"Deliveryman_intro\": {\n" +
             "    \"lines\": [\n" +
-            "      { \"speaker\": \"npc\", \"text\": \"Here is your Pizza!\" }\n" +
+            "      { \"speaker\": \"npc\", \"text\": \"Here is your package!\" }\n" +
             "    ]\n" +
             "  }\n" +
             "}";
@@ -183,20 +235,22 @@ class QuestManagerTest {
             questManager.onDialogueCompleted(dialogueId, npcName, backpack, repSystem);
         });
 
-        // Fast forward quest to step 3
+        // Fast forward to step 5
         questManager.onDialogueCompleted("Rafat_intro", "Rafat", backpack, repSystem);
         questManager.onDialogueCompleted("Sofia_intro", "Sofia", backpack, repSystem);
+        questManager.onDialogueCompleted("Shopkeeper_intro", "Shopkeeper", backpack, repSystem);
+        questManager.onDialogueCompleted("Sofia_pizza", "Sofia", backpack, repSystem);
 
-        NPCConfig shopConfig = new NPCConfig("Shopkeeper", "Male01_Left", "Shopkeeper_intro", "NONE", false, true, 100f);
-        NPC shopkeeper = new NPC(shopConfig, 0, 0, 40, 60, null);
+        NPCConfig deliveryConfig = new NPCConfig("Deliveryman", "Male01_Left", "Deliveryman_intro", "NONE", false, true, 100f);
+        NPC deliveryman = new NPC(deliveryConfig, 0, 0, 40, 60, null);
 
-        dialogueManager.startDialogue(shopkeeper, "Shopkeeper_intro");
+        dialogueManager.startDialogue(deliveryman, "Deliveryman_intro");
         assertTrue(dialogueManager.isActive());
-        assertFalse(backpack.hasItem(new Item("Pizza")));
+        assertFalse(backpack.hasItem(new Item("Gift")));
 
         // Advance past final line
         dialogueManager.advanceDialogue();
         assertFalse(dialogueManager.isActive());
-        assertTrue(backpack.hasItem(new Item("Pizza")));
+        assertTrue(backpack.hasItem(new Item("Gift")));
     }
 }
