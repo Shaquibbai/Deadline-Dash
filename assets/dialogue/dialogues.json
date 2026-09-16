@@ -282,19 +282,19 @@
   "Deliveryman_intro": {
     "lines": [
       {
-        "speaker": "player",
+        "speaker": "npc",
         "text": "Assalamualaikum sir, did you have an order?"
       },
       {
-        "speaker": "npc",
+        "speaker": "player",
         "text": "Well, yes! The order ID is #Ord-6776."
       },
       {
-        "speaker": "player",
+        "speaker": "npc",
         "text": "Here's your product, sir. Thank you for ordering. Hope you have a nice day."
       },
       {
-        "speaker": "npc",
+        "speaker": "player",
         "text": "Yeah man, I wish!"
       }
     ]
@@ -307,25 +307,208 @@
         "text": "Hey man. You're back."
       },
       {
-        "speaker": "npc",
+        "speaker": "player",
         "text": "Don't say a word. Here's your laptop, so go to work. And here's your one-month anniversary gift."
       },
       {
-        "speaker": "player",
+        "speaker": "npc",
         "text": "Oh, she remembered! My honeybee, my-"
       },
       {
-        "speaker": "npc",
+        "speaker": "player",
         "text": "Ohh, stop it! Just take these and start working. I can't take this cheesiness anymore."
       },
       {
-        "speaker": "player",
+        "speaker": "npc",
         "text": "Yeah man, I'll go now. Thanks again."
       },
       {
-        "speaker": "npc",
+        "speaker": "player",
         "text": "You better finish everything without causing any more trouble... and learn to read everyone's texts!"
       }
     ]
+  },
+
+  "Shafeen_intro": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Hey, Shafeen. What's up?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Oh hey, Shaquib. I'm doing good. Have you seen the deadline notification? It's good that we finished earlier."
+      },
+      {
+        "speaker": "player",
+        "text": "Yeah, I have seen that. Wait, what?? You guys have already finished?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Yes, almost everybody is finished."
+      },
+      {
+        "speaker": "player",
+        "text": "\"Wow. Looks like my team is in real trouble now.\""
+      },
+      {
+        "speaker": "player",
+        "text": "Well, apparently we still have a lot to do..."
+      },
+      {
+        "speaker": "npc",
+        "text": "Then you must do it fast. Talking about teammates, who are you with?"
+      },
+      {
+        "speaker": "player",
+        "text": "Talha and Rafat. By the way, have you seen those two?"
+      },
+      {
+        "speaker": "npc",
+        "text": "I don't know about Rafat, but today's the CSE/EEE football final... so you know where to look for Talha."
+      },
+      {
+        "speaker": "player",
+        "text": "Right. Thanks for the info. Then I'll leave now."
+      },
+      {
+        "speaker": "npc",
+        "text": "Okay, see you."
+      }
+    ]
+  },
+
+  "Shafeen_waiting": {
+    "lines": [
+      {
+        "speaker": "npc",
+        "text": "Shouldn't you look for Talha? He should be near CDS, preparing for the match."
+      },
+      {
+        "speaker": "player",
+        "text": "Yeah, I am heading over there now."
+      }
+    ]
+  },
+
+  "Talha_intro": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Hey, what are you doing here, man? We have a full project to do, and only 40 or something hours left!"
+      },
+      {
+        "speaker": "npc",
+        "text": "What??? Wasn't the deadline a month away? How come we only have a day and a half?"
+      },
+      {
+        "speaker": "player",
+        "text": "Well, it was shifted. Duhhh. So, when are you going to work?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Man, you see that we have this CSE vs EEE game today. I must play and can't leave the game!"
+      },
+      {
+        "speaker": "player",
+        "text": "Bruv, your semester is on the line!"
+      },
+      {
+        "speaker": "npc",
+        "text": "I know, man. Wait, lemme think what I can do!!!!!! Hey, you and I look kinda the same..."
+      },
+      {
+        "speaker": "player",
+        "text": "Hey, I don't like the idea, whatever you are going to say."
+      },
+      {
+        "speaker": "npc",
+        "text": "I haven't even said anything."
+      },
+      {
+        "speaker": "player",
+        "text": "I can sense it. You're going to tell me to play, aren't you?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Well, you are a brilliant player, so why not?"
+      },
+      {
+        "speaker": "player",
+        "text": "But I planned not to play. I retired!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Please, just this once! For the sake of the game?"
+      },
+      {
+        "speaker": "player",
+        "text": "Arghhh, whatever. Finish your part. I will sub for you."
+      },
+      {
+        "speaker": "npc",
+        "text": "No worries, boss. I will work hard. So promise me you won't lose."
+      }
+    ]
+  },
+
+  "Talha_waiting": {
+    "lines": [
+      {
+        "speaker": "npc",
+        "text": "Are you ready to play now?"
+      }
+    ]
+  },
+
+  "Talha_matchWon": {
+    "lines": [
+      {
+        "speaker": "npc",
+        "text": "Well done! You've played brilliantly."
+      },
+      {
+        "speaker": "player",
+        "text": "Thanks, but what are you doing here? Weren't you supposed to work?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Relax, I have started working. I just hit my limit on Claude. It's supposed to reset in... seven minutes. Anyway have you seen my lungi?"
+      },
+      {
+        "speaker": "player",
+        "text": "Why would you need a lungi now?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Well, gonna show those blueberries who their father is!!!"
+      },
+      {
+        "speaker": "player",
+        "text": "Dude.... You didn't even play..."
+      }
+    ]
+  },
+
+  "Talha_matchLost": {
+    "lines": [
+      {
+        "speaker": "npc",
+        "text": "Man, I let you play and you sink the whole department."
+      },
+      {
+        "speaker": "player",
+        "text": "I am sorry, man... Wait, what are you doing here??? You're supposed to work!"
+      },
+      {
+        "speaker": "npc",
+        "text": "Relax, I was only here because my Claude reached its limit. It's supposed to reset in....6 or 7 minutes, but I got to see your stupid play."
+      },
+      {
+        "speaker": "player",
+        "text": "Yeah, whatever. Just finish the project within the deadline."
+      }
+    ]
   }
+
 }

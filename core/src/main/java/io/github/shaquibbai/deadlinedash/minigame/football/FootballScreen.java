@@ -33,9 +33,14 @@ import java.util.Queue;
  * Isolated from quest progression and dialogues, launched via debug key 'T'.
  */
 public class FootballScreen implements Screen {
+    public interface FootballResultListener {
+        void onMatchCompleted(int cseScore, int eeeScore);
+    }
+
     private final DeadlineDash game;
     private final GameScreen previousScreen;
     private final SpriteBatch batch;
+    private FootballResultListener resultListener;
 
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -207,13 +212,22 @@ public class FootballScreen implements Screen {
     private float animTime = 0f;
 
     public FootballScreen(DeadlineDash game, GameScreen previousScreen) {
+        this(game, previousScreen, null);
+    }
+
+    public FootballScreen(DeadlineDash game, GameScreen previousScreen, FootballResultListener resultListener) {
         this.game = game;
         this.previousScreen = previousScreen;
+        this.resultListener = resultListener;
         this.batch = game.getBatch();
 
         initViewport();
         initAssets();
         initMatch();
+    }
+
+    public void setResultListener(FootballResultListener resultListener) {
+        this.resultListener = resultListener;
     }
 
     private void initViewport() {
@@ -1198,6 +1212,9 @@ public class FootballScreen implements Screen {
     }
 
     private void returnToGameScreen() {
+        if (resultListener != null && state == GameState.MATCH_OVER) {
+            resultListener.onMatchCompleted(cseScore, eeeScore);
+        }
         if (previousScreen != null) {
             game.setScreen(previousScreen);
         }

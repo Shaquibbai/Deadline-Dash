@@ -42,7 +42,7 @@
  </objectgroup>
  <objectgroup id="5" name="NPCs"/>
  <objectgroup id="3" name="Collision">
-  <object id="2" name="desks" x="185" y="726.5" width="291.5" height="40"/>
+  <object id="2" name="desks" x="185" y="726.5" width="291.5" height="26.6667"/>
   <object id="4" name="desks" x="185.75" y="804" width="291.5" height="40"/>
   <object id="5" name="desks" x="185.75" y="884" width="291.5" height="40"/>
   <object id="6" name="desks" x="185.25" y="967" width="291.5" height="40"/>

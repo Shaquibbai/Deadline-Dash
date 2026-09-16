@@ -13,4 +13,5 @@ public class AssetPaths {
     public static final String TITLE_SCREEN_IMAGE = "title_screen.jpg";
     public static final String BACKPACK_ICON = "ui/backpack_icon.png";
     public static final String QUEST_1 = "quests/quest1.json";
+    public static final String QUEST_2 = "quests/quest2.json";
 }

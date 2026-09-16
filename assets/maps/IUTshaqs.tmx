@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="1584" height="528" tilewidth="64" tileheight="64" infinite="0" nextlayerid="19" nextobjectid="438">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="1584" height="528" tilewidth="64" tileheight="64" infinite="0" nextlayerid="19" nextobjectid="440">
  <tileset firstgid="1" name="roads" tilewidth="64" tileheight="64" tilecount="384" columns="24">
   <image source="../tilesets/roads.png" width="1536" height="1024"/>
  </tileset>
@@ -3011,6 +3011,28 @@
     <property name="model" value="Male01_Left"/>
     <property name="name" value="Deliveryman"/>
     <property name="quest" value="Quest1"/>
+   </properties>
+  </object>
+  <object id="438" name="Shafeen" type="NPC" x="10001.5" y="5020.06" width="127.273" height="99.0909">
+   <properties>
+    <property name="dialogue" value="Shafeen_intro"/>
+    <property name="idleAnimation" type="bool" value="false"/>
+    <property name="interactable" type="bool" value="true"/>
+    <property name="interactionRange" type="float" value="150"/>
+    <property name="model" value="Male01_Forward"/>
+    <property name="name" value="Shafeen"/>
+    <property name="quest" value="Quest2"/>
+   </properties>
+  </object>
+  <object id="439" name="Talha" type="NPC" x="9323" y="15888" width="100" height="110">
+   <properties>
+    <property name="dialogue" value="Talha_intro"/>
+    <property name="idleAnimation" type="bool" value="false"/>
+    <property name="interactable" type="bool" value="false"/>
+    <property name="interactionRange" type="float" value="150"/>
+    <property name="model" value="Male14_Forward"/>
+    <property name="name" value="Talha"/>
+    <property name="quest" value="Quest2"/>
    </properties>
   </object>
  </objectgroup>

@@ -30,6 +30,7 @@ import io.github.shaquibbai.deadlinedash.map.MapManager;
 import io.github.shaquibbai.deadlinedash.npc.NPC;
 import io.github.shaquibbai.deadlinedash.quest.QuestManager;
 import io.github.shaquibbai.deadlinedash.rep.RepSystem;
+import io.github.shaquibbai.deadlinedash.timer.TimeManager;
 
 /**
  * Main gameplay screen for Phase 1.
@@ -67,9 +68,13 @@ public class GameScreen implements Screen {
 
     // Quest System Component
     private QuestManager questManager;
+    private io.github.shaquibbai.deadlinedash.quest.Quest2Controller quest2Controller;
 
     // REP / Progression System Components
     private RepSystem repSystem;
+
+    // Global Time Manager Component
+    private TimeManager timeManager;
 
     // Backpack & Inventory System Components
     private Backpack backpack;
@@ -96,10 +101,23 @@ public class GameScreen implements Screen {
 
         initCameraAndViewport();
         initWorld();
+        initTimeManager();
         initRepSystem();
         initBackpackSystem();
         initDialogueSystem();
         initQuestSystem();
+    }
+
+    private void initTimeManager() {
+        timeManager = new TimeManager();
+    }
+
+    public TimeManager getTimeManager() {
+        return timeManager;
+    }
+
+    public float getTime() {
+        return timeManager != null ? timeManager.getTime() : 0f;
     }
 
     private void initDialogueSystem() {
@@ -109,15 +127,42 @@ public class GameScreen implements Screen {
 
     private void initQuestSystem() {
         questManager = new QuestManager(AssetPaths.QUEST_1);
+        quest2Controller = new io.github.shaquibbai.deadlinedash.quest.Quest2Controller(AssetPaths.QUEST_2);
+
         dialogueManager.setCompletionListener((dialogueId, npc) -> {
             String npcName = npc != null ? npc.getName() : "";
             String toastMsg = questManager.onDialogueCompleted(dialogueId, npcName, backpack, repSystem);
             if (toastMsg != null && !toastMsg.isEmpty()) {
                 itemConfirmationDialog.showToast(toastMsg);
             }
-            questManager.syncMapNpcs(mapManager.getNpcs());
+            quest2Controller.onDialogueCompleted(dialogueId, npcName, backpack, repSystem, timeManager);
+
+            syncAllMapNpcs();
         });
-        questManager.syncMapNpcs(mapManager.getNpcs());
+        syncAllMapNpcs();
+    }
+
+    private void syncAllMapNpcs() {
+        if (mapManager == null) return;
+        for (NPC npc : mapManager.getNpcs()) {
+            String name = npc.getName();
+            if (quest2Controller != null && quest2Controller.isManagedNpc(name)) {
+                npc.setInteractable(quest2Controller.isNpcInteractable(name));
+            } else if (questManager != null) {
+                questManager.syncNpcInteractability(npc);
+            }
+        }
+    }
+
+    private String getActiveDialogueForNpc(NPC npc) {
+        if (npc == null) return "";
+        String name = npc.getName();
+        if (quest2Controller != null && quest2Controller.isManagedNpc(name)) {
+            return quest2Controller.getDialogueForNpc(name, npc.getConfig().getDialogue(), backpack);
+        } else if (questManager != null) {
+            return questManager.getDialogueForNpc(npc, backpack);
+        }
+        return npc.getConfig().getDialogue();
     }
 
     private void initCameraAndViewport() {
@@ -281,6 +326,11 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
 
+        // Update global countdown timer continuously
+        if (timeManager != null) {
+            timeManager.update(delta);
+        }
+
         // Update Dialogue UI animations
         dialogueUI.update(delta);
 
@@ -294,7 +344,7 @@ public class GameScreen implements Screen {
         camera.zoom = MathUtils.clamp(camera.zoom, MIN_ZOOM, MAX_ZOOM);
 
         boolean isF3Pressed = Gdx.input.isKeyPressed(Input.Keys.F3);
-        boolean isUiModalActive = itemConfirmationDialog.isActive() || backpackUI.isOpen() || dialogueManager.isActive() || isTransitionConfirmationActive;
+        boolean isUiModalActive = itemConfirmationDialog.isActive() || backpackUI.isOpen() || dialogueManager.isActive() || isTransitionConfirmationActive || (quest2Controller != null && quest2Controller.isMatchPromptActive());
 
         if (isF3Pressed && !isUiModalActive) {
             // Free Camera Debug Mode: WASD moves camera directly across map
@@ -343,6 +393,27 @@ public class GameScreen implements Screen {
 
         boolean justClicked = Gdx.input.justTouched();
 
+        // Handle Football Match Choice YES / NO
+        if (quest2Controller != null && quest2Controller.isMatchPromptActive()) {
+            boolean yesPressed = Gdx.input.isKeyJustPressed(Input.Keys.Y) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER);
+            boolean noPressed = Gdx.input.isKeyJustPressed(Input.Keys.N);
+
+            if (justClicked) {
+                if (DialogueUI.YES_BUTTON_BOUNDS.contains(hudMousePos.x, hudMousePos.y)) {
+                    yesPressed = true;
+                } else if (DialogueUI.NO_BUTTON_BOUNDS.contains(hudMousePos.x, hudMousePos.y)) {
+                    noPressed = true;
+                }
+            }
+
+            if (yesPressed) {
+                quest2Controller.onMatchChoiceYes();
+                launchFootballMinigame();
+            } else if (noPressed) {
+                quest2Controller.onMatchChoiceNo();
+            }
+        }
+
         // Handle Transition Confirmation YES / NO Mouse Clicking
         if (isTransitionConfirmationActive) {
             if (justClicked) {
@@ -364,14 +435,16 @@ public class GameScreen implements Screen {
 
         // Process HUD Backpack icon click (toggle backpack UI)
         if (justClicked && backpackIconBounds.contains(hudMousePos.x, hudMousePos.y)) {
-            if (!itemConfirmationDialog.isActive() && !dialogueManager.isActive() && !isTransitionConfirmationActive) {
+            if (!itemConfirmationDialog.isActive() && !dialogueManager.isActive() && !isTransitionConfirmationActive && (quest2Controller == null || !quest2Controller.isMatchPromptActive())) {
                 backpackUI.toggle();
             }
         }
 
         // ESC key: cancel transition confirmation / close active dialogue / close backpack UI / return to Start Menu (TitleScreen)
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            if (isTransitionConfirmationActive) {
+            if (quest2Controller != null && quest2Controller.isMatchPromptActive()) {
+                quest2Controller.onMatchChoiceNo();
+            } else if (isTransitionConfirmationActive) {
                 cancelTransitionConfirmation();
             } else if (dialogueManager.isActive()) {
                 dialogueManager.endDialogue();
@@ -451,7 +524,8 @@ public class GameScreen implements Screen {
             debugFont.setColor(Color.YELLOW);
         }
 
-        // 3. Render Gameplay HUD Backpack Icon (Top Right, Clean - No text labels or screen tinting)
+        // 3. Render Gameplay HUD Backpack Icon and Countdown Timer (Top Right, Clean - Timer positioned ABOVE Backpack Icon)
+        renderTimerHUD();
         renderBackpackHUD();
 
         // 4. Render Centered Backpack UI Panel (if open)
@@ -460,8 +534,10 @@ public class GameScreen implements Screen {
         // 5. Render Centered Item Storage Confirmation Dialog & Toast Notifications
         itemConfirmationDialog.render(batch, hudTitleFont, hudFont, whitePixel, hudMousePos);
 
-        // 6. Render Dialogue UI / Transition Confirmation UI (reusing existing bottom dialogue window)
-        if (isTransitionConfirmationActive && pendingTransition != null) {
+        // 6. Render Dialogue UI / Transition Confirmation UI / Football Match Choice UI
+        if (quest2Controller != null && quest2Controller.isMatchPromptActive()) {
+            dialogueUI.renderConfirmation(batch, hudFont, whitePixel, "Do you want to play the football match now?", hudMousePos);
+        } else if (isTransitionConfirmationActive && pendingTransition != null) {
             String promptMsg = getConfirmationText(pendingTransition.getName());
             dialogueUI.renderConfirmation(batch, hudFont, whitePixel, promptMsg, hudMousePos);
         } else if (dialogueManager.isActive()) {
@@ -499,6 +575,43 @@ public class GameScreen implements Screen {
 
         batch.setColor(Color.WHITE);
         batch.draw(backpackIconTexture, iconX, iconY, iconW, iconH);
+        batch.setColor(Color.WHITE);
+    }
+
+    /**
+     * Renders top-right gameplay HUD displaying global countdown timer.
+     * Positioned directly ABOVE the existing Backpack icon.
+     * Fixed in screen space [0..1280, 0..720].
+     * Backpack Icon bounds: X=1170f, Y=575f, W=64f, H=64f (Top edge Y=639f).
+     * Timer box bounds: X=1155f, Y=650f, W=94f, H=36f.
+     */
+    private void renderTimerHUD() {
+        if (timeManager == null) return;
+
+        float boxW = 94f;
+        float boxH = 36f;
+        float boxX = 1155f;
+        float boxY = 650f;
+
+        // Dark background panel
+        batch.setColor(0.10f, 0.12f, 0.16f, 0.88f);
+        batch.draw(whitePixel, boxX, boxY, boxW, boxH);
+
+        // Accent border
+        batch.setColor(0.30f, 0.90f, 1.0f, 0.80f);
+        batch.draw(whitePixel, boxX, boxY, boxW, 2);
+        batch.draw(whitePixel, boxX, boxY + boxH - 2, boxW, 2);
+        batch.draw(whitePixel, boxX, boxY, 2, boxH);
+        batch.draw(whitePixel, boxX + boxW - 2, boxY, 2, boxH);
+
+        // Formatted timer text e.g. "1d 23h"
+        String timerStr = timeManager.getFormattedTime();
+        hudTitleFont.setColor(new Color(1.0f, 0.88f, 0.15f, 1.0f)); // Bright warm yellow
+        GlyphLayout layout = new GlyphLayout(hudTitleFont, timerStr);
+        float textX = boxX + (boxW - layout.width) / 2f;
+        float textY = boxY + (boxH + layout.height) / 2f;
+        hudTitleFont.draw(batch, timerStr, textX, textY);
+        hudTitleFont.setColor(Color.WHITE);
         batch.setColor(Color.WHITE);
     }
 
@@ -574,7 +687,7 @@ public class GameScreen implements Screen {
         System.out.printf("[TRANSITION] Loading destination map: %s with spawn target: %s%n", targetMap, targetSpawn);
 
         mapManager.loadMap(targetMap, batch);
-        questManager.syncMapNpcs(mapManager.getNpcs());
+        syncAllMapNpcs();
 
         Vector2 spawnPos = mapManager.getSpawnPosition("PlayerSpawns", targetSpawn);
         if (spawnPos != null) {
@@ -593,17 +706,37 @@ public class GameScreen implements Screen {
         System.out.printf("[TRANSITION] Successfully completed transition to map: %s%n", targetMap);
     }
 
+    private void launchFootballMinigame() {
+        game.setScreen(new io.github.shaquibbai.deadlinedash.minigame.football.FootballScreen(game, this, (cseScore, eeeScore) -> {
+            String resultDialogueId = quest2Controller.handleMatchResult(cseScore, eeeScore);
+            NPC talha = findNpcByName("Talha");
+            if (talha != null) {
+                dialogueManager.startDialogue(talha, resultDialogueId);
+            }
+        }));
+    }
+
+    private NPC findNpcByName(String name) {
+        if (mapManager == null || name == null) return null;
+        for (NPC npc : mapManager.getNpcs()) {
+            if (name.equalsIgnoreCase(npc.getName())) {
+                return npc;
+            }
+        }
+        return null;
+    }
+
     private void handleDialogueInput() {
         boolean fJustPressed = Gdx.input.isKeyJustPressed(Input.Keys.F);
         if (dialogueManager.isActive()) {
             if (fJustPressed) {
                 dialogueManager.advanceDialogue();
             }
-        } else if (!itemConfirmationDialog.isActive() && !backpackUI.isOpen() && !isTransitionConfirmationActive) {
+        } else if (!itemConfirmationDialog.isActive() && !backpackUI.isOpen() && !isTransitionConfirmationActive && (quest2Controller == null || !quest2Controller.isMatchPromptActive())) {
             if (fJustPressed) {
                 NPC closestNpc = findClosestInteractableNPC();
                 if (closestNpc != null) {
-                    String dialogueId = questManager.getDialogueForNpc(closestNpc, backpack);
+                    String dialogueId = getActiveDialogueForNpc(closestNpc);
                     dialogueManager.startDialogue(closestNpc, dialogueId);
                 }
             }
@@ -617,12 +750,13 @@ public class GameScreen implements Screen {
         float playerCenterX = player.getCenterX();
         float playerCenterY = player.getCenterY();
 
+        syncAllMapNpcs();
+
         for (NPC npc : mapManager.getNpcs()) {
-            questManager.syncNpcInteractability(npc);
             if (!npc.isInteractable()) {
                 continue;
             }
-            String dialogue = questManager.getDialogueForNpc(npc, backpack);
+            String dialogue = getActiveDialogueForNpc(npc);
             if (dialogue == null || dialogue.trim().isEmpty() || "NONE".equalsIgnoreCase(dialogue.trim())) {
                 continue;
             }
@@ -644,11 +778,18 @@ public class GameScreen implements Screen {
     }
 
     private void renderQuestMarkers(SpriteBatch batch) {
-        if (questManager == null) return;
+        if (mapManager == null) return;
         GlyphLayout layout = new GlyphLayout();
 
         for (NPC npc : mapManager.getNpcs()) {
-            io.github.shaquibbai.deadlinedash.quest.QuestMarker marker = questManager.getMarkerForNpc(npc, backpack);
+            String name = npc.getName();
+            io.github.shaquibbai.deadlinedash.quest.QuestMarker marker = io.github.shaquibbai.deadlinedash.quest.QuestMarker.NONE;
+            if (quest2Controller != null && quest2Controller.isManagedNpc(name)) {
+                marker = quest2Controller.getMarkerForNpc(name, backpack);
+            } else if (questManager != null) {
+                marker = questManager.getMarkerForNpc(npc, backpack);
+            }
+
             if (marker == io.github.shaquibbai.deadlinedash.quest.QuestMarker.NONE) {
                 continue;
             }
@@ -703,5 +844,6 @@ public class GameScreen implements Screen {
         if (backpackIconTexture != null) backpackIconTexture.dispose();
         if (whitePixel != null) whitePixel.dispose();
         if (dialogueUI != null) dialogueUI.dispose();
+        if (timeManager != null) timeManager.dispose();
     }
 }

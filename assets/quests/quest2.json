@@ -1,0 +1,23 @@
+{
+  "id": "Quest2",
+  "name": "Quest 2",
+  "description": "Football Quest with Shafeen and Talha",
+  "rewardRep": 0,
+  "initialInteractableNpcs": ["Shafeen"],
+  "steps": [
+    {
+      "stepIndex": 1,
+      "npc": "Shafeen",
+      "dialogueId": "Shafeen_intro",
+      "reminderDialogueId": "Shafeen_waiting",
+      "unlockNpcs": ["Talha"]
+    },
+    {
+      "stepIndex": 2,
+      "npc": "Talha",
+      "dialogueId": "Talha_intro",
+      "reminderDialogueId": "Talha_waiting",
+      "reminderNpcs": ["Shafeen"]
+    }
+  ]
+}
