@@ -27,6 +27,35 @@ public class QuestManager {
     private final Set<String> interactableNpcs = new HashSet<>();
     private final Set<String> managedNpcs = new HashSet<>();
 
+    private int completedTaskCount = 0;
+    private final Set<String> completedQuestIds = new HashSet<>();
+
+    public interface QuestCompletionListener {
+        void onQuestCompleted(String questId, int totalCompletedTasks);
+    }
+    private QuestCompletionListener questCompletionListener;
+
+    public void setQuestCompletionListener(QuestCompletionListener listener) {
+        this.questCompletionListener = listener;
+    }
+
+    public int getCompletedTaskCount() {
+        return completedTaskCount;
+    }
+
+    public boolean recordTaskCompleted(String questId) {
+        if (questId != null && !questId.trim().isEmpty() && completedQuestIds.add(questId.trim())) {
+            completedTaskCount++;
+            System.out.printf("[QUEST] Main task '%s' recorded as completed. Total completed tasks: %d%n",
+                questId.trim(), completedTaskCount);
+            if (questCompletionListener != null) {
+                questCompletionListener.onQuestCompleted(questId.trim(), completedTaskCount);
+            }
+            return true;
+        }
+        return false;
+    }
+
     public QuestManager() {
     }
 
@@ -160,7 +189,13 @@ public class QuestManager {
     /**
      * Resets state to start of loaded quest.
      */
+    public void resetTaskCompletions() {
+        this.completedTaskCount = 0;
+        this.completedQuestIds.clear();
+    }
+
     public void resetState() {
+        resetTaskCompletions();
         if (quest == null) return;
         this.questState = QuestState.IN_PROGRESS;
         this.currentStepIndex = 1;
@@ -382,6 +417,7 @@ public class QuestManager {
             if (currentStepIndex > quest.getSteps().size()) {
                 this.questState = QuestState.COMPLETED;
                 this.interactableNpcs.clear(); // Disable all quest interactions
+                recordTaskCompleted(quest.getId());
                 System.out.printf("[QUEST] Quest '%s' COMPLETED!%n", quest.getId());
                 if (repSystem != null && quest.getRewardRep() > 0) {
                     repSystem.addRep(quest.getRewardRep());

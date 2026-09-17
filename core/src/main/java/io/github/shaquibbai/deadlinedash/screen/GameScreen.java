@@ -30,6 +30,9 @@ import io.github.shaquibbai.deadlinedash.map.MapManager;
 import io.github.shaquibbai.deadlinedash.npc.NPC;
 import io.github.shaquibbai.deadlinedash.quest.QuestManager;
 import io.github.shaquibbai.deadlinedash.rep.RepSystem;
+import io.github.shaquibbai.deadlinedash.ending.EndingController;
+import io.github.shaquibbai.deadlinedash.ending.EndingScreen;
+import io.github.shaquibbai.deadlinedash.ending.EndingType;
 import io.github.shaquibbai.deadlinedash.timer.TimeManager;
 
 /**
@@ -69,6 +72,10 @@ public class GameScreen implements Screen {
     // Quest System Component
     private QuestManager questManager;
     private io.github.shaquibbai.deadlinedash.quest.Quest2Controller quest2Controller;
+
+    // Ending System Components
+    private EndingController endingController;
+    private EndingType pendingEnding = null;
 
     // REP / Progression System Components
     private RepSystem repSystem;
@@ -128,6 +135,16 @@ public class GameScreen implements Screen {
     private void initQuestSystem() {
         questManager = new QuestManager(AssetPaths.QUEST_1);
         quest2Controller = new io.github.shaquibbai.deadlinedash.quest.Quest2Controller(AssetPaths.QUEST_2);
+        endingController = new EndingController();
+
+        questManager.setQuestCompletionListener((questId, total) -> {
+            checkEarlyWinEnding();
+        });
+
+        quest2Controller.setCompletionListener(() -> {
+            questManager.recordTaskCompleted("Quest2");
+            checkEarlyWinEnding();
+        });
 
         dialogueManager.setCompletionListener((dialogueId, npc) -> {
             String npcName = npc != null ? npc.getName() : "";
@@ -326,9 +343,24 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
 
+        // If an ending was triggered, immediately transition to EndingScreen
+        if (pendingEnding != null) {
+            EndingType toTrigger = pendingEnding;
+            pendingEnding = null;
+            triggerEnding(toTrigger);
+            return;
+        }
+
         // Update global countdown timer continuously
         if (timeManager != null) {
             timeManager.update(delta);
+            if (timeManager.isExpired() && endingController != null && !endingController.isEndingTriggered()) {
+                EndingType ending = endingController.checkTimerExpired(questManager != null ? questManager.getCompletedTaskCount() : 0);
+                if (ending != null) {
+                    triggerEnding(ending);
+                    return;
+                }
+            }
         }
 
         // Update Dialogue UI animations
@@ -432,6 +464,13 @@ public class GameScreen implements Screen {
 
         // Process NPC Interaction and Dialogue Progression ('F')
         handleDialogueInput();
+
+        if (pendingEnding != null) {
+            EndingType toTrigger = pendingEnding;
+            pendingEnding = null;
+            triggerEnding(toTrigger);
+            return;
+        }
 
         // Process HUD Backpack icon click (toggle backpack UI)
         if (justClicked && backpackIconBounds.contains(hudMousePos.x, hudMousePos.y)) {
@@ -579,40 +618,60 @@ public class GameScreen implements Screen {
     }
 
     /**
-     * Renders top-right gameplay HUD displaying global countdown timer.
-     * Positioned directly ABOVE the existing Backpack icon.
-     * Fixed in screen space [0..1280, 0..720].
-     * Backpack Icon bounds: X=1170f, Y=575f, W=64f, H=64f (Top edge Y=639f).
-     * Timer box bounds: X=1155f, Y=650f, W=94f, H=36f.
+     * Renders top-right gameplay HUD displaying global countdown timer (HH : MM).
+     * Positioned directly ABOVE the existing Backpack icon at its current HUD location (centered at X=1202f, Y=668f).
+     * The surrounding box/background is removed completely.
+     * Hour and minute numbers are bold; colon remains normal weight.
      */
     private void renderTimerHUD() {
         if (timeManager == null) return;
 
-        float boxW = 94f;
-        float boxH = 36f;
-        float boxX = 1155f;
-        float boxY = 650f;
+        String hhStr = String.format("%02d", timeManager.getDisplayHours());
+        String colonStr = " : ";
+        String mmStr = String.format("%02d", timeManager.getDisplayMinutes());
 
-        // Dark background panel
-        batch.setColor(0.10f, 0.12f, 0.16f, 0.88f);
-        batch.draw(whitePixel, boxX, boxY, boxW, boxH);
+        GlyphLayout layoutHH = new GlyphLayout(hudTitleFont, hhStr);
+        GlyphLayout layoutColon = new GlyphLayout(hudTitleFont, colonStr);
+        GlyphLayout layoutMM = new GlyphLayout(hudTitleFont, mmStr);
 
-        // Accent border
-        batch.setColor(0.30f, 0.90f, 1.0f, 0.80f);
-        batch.draw(whitePixel, boxX, boxY, boxW, 2);
-        batch.draw(whitePixel, boxX, boxY + boxH - 2, boxW, 2);
-        batch.draw(whitePixel, boxX, boxY, 2, boxH);
-        batch.draw(whitePixel, boxX + boxW - 2, boxY, 2, boxH);
+        float totalW = layoutHH.width + layoutColon.width + layoutMM.width;
+        float centerX = 1202f;
+        float centerY = 668f;
+        float startX = centerX - (totalW / 2f);
+        float textY = centerY + (layoutHH.height / 2f);
 
-        // Formatted timer text e.g. "1d 23h"
-        String timerStr = timeManager.getFormattedTime();
-        hudTitleFont.setColor(new Color(1.0f, 0.88f, 0.15f, 1.0f)); // Bright warm yellow
-        GlyphLayout layout = new GlyphLayout(hudTitleFont, timerStr);
-        float textX = boxX + (boxW - layout.width) / 2f;
-        float textY = boxY + (boxH + layout.height) / 2f;
-        hudTitleFont.draw(batch, timerStr, textX, textY);
+        float hhX = startX;
+        float colonX = hhX + layoutHH.width;
+        float mmX = colonX + layoutColon.width;
+
+        Color timerColor = new Color(0.78f, 0.12f, 0.12f, 1.0f); // Dark red
+
+        // 1. Subtle drop shadow for crisp visibility on any background tile without a box
+        hudTitleFont.setColor(0f, 0f, 0f, 0.85f);
+        drawBoldText(batch, hudTitleFont, hhStr, hhX + 1.5f, textY - 1.5f);
+        hudTitleFont.draw(batch, colonStr, colonX + 1.5f, textY - 1.5f);
+        drawBoldText(batch, hudTitleFont, mmStr, mmX + 1.5f, textY - 1.5f);
+
+        // 2. Urgent bold timer text (colon remains normal weight)
+        hudTitleFont.setColor(timerColor);
+        drawBoldText(batch, hudTitleFont, hhStr, hhX, textY);
+        hudTitleFont.draw(batch, colonStr, colonX, textY);
+        drawBoldText(batch, hudTitleFont, mmStr, mmX, textY);
+
         hudTitleFont.setColor(Color.WHITE);
         batch.setColor(Color.WHITE);
+    }
+
+    private void drawBoldText(SpriteBatch batch, BitmapFont font, String text, float x, float y) {
+        font.draw(batch, text, x - 1.2f, y);
+        font.draw(batch, text, x + 1.2f, y);
+        font.draw(batch, text, x, y - 1.2f);
+        font.draw(batch, text, x, y + 1.2f);
+        font.draw(batch, text, x - 0.8f, y - 0.8f);
+        font.draw(batch, text, x + 0.8f, y + 0.8f);
+        font.draw(batch, text, x - 0.8f, y + 0.8f);
+        font.draw(batch, text, x + 0.8f, y - 0.8f);
+        font.draw(batch, text, x, y);
     }
 
     private void handleTransitionTriggered(io.github.shaquibbai.deadlinedash.map.SceneTransition transition) {
@@ -809,6 +868,34 @@ public class GameScreen implements Screen {
             debugFont.getData().setScale(1.2f); // Reset scale
         }
         batch.setColor(Color.WHITE);
+    }
+
+    public EndingController getEndingController() {
+        return endingController;
+    }
+
+    public QuestManager getQuestManager() {
+        return questManager;
+    }
+
+    public io.github.shaquibbai.deadlinedash.quest.Quest2Controller getQuest2Controller() {
+        return quest2Controller;
+    }
+
+    private void checkEarlyWinEnding() {
+        if (endingController == null || questManager == null || timeManager == null) return;
+        EndingType ending = endingController.checkEarlyWin(
+            questManager.getCompletedTaskCount(),
+            timeManager.getRemainingHours()
+        );
+        if (ending != null) {
+            pendingEnding = ending;
+        }
+    }
+
+    private void triggerEnding(EndingType endingType) {
+        game.setScreen(new EndingScreen(game, endingType));
+        dispose();
     }
 
     private void returnToTitleScreen() {

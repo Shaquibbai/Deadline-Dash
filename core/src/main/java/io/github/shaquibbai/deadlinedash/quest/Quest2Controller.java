@@ -27,9 +27,18 @@ public class Quest2Controller {
         COMPLETED
     }
 
+    public interface Quest2CompletionListener {
+        void onQuest2Completed();
+    }
+
     private State state = State.SHAFEEN_INTRO;
     private boolean matchPromptActive = false;
     private boolean rewardsApplied = false;
+    private Quest2CompletionListener completionListener;
+
+    public void setCompletionListener(Quest2CompletionListener listener) {
+        this.completionListener = listener;
+    }
 
     private Integer lastCseScore = null;
     private Integer lastEeeScore = null;
@@ -214,6 +223,9 @@ public class Quest2Controller {
         rewardsApplied = true;
         state = State.COMPLETED;
         matchPromptActive = false;
+        if (completionListener != null) {
+            completionListener.onQuest2Completed();
+        }
     }
 
     public String handleMatchResult(int cseScore, int eeeScore) {

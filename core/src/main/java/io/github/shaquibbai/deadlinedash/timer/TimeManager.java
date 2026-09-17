@@ -5,22 +5,22 @@ package io.github.shaquibbai.deadlinedash.timer;
  * <p>
  * Game Time Specifications:
  * <ul>
- *   <li>Starting game time: 1 day 24 hours = 48 hours total.</li>
+ *   <li>Starting game time: 36 hours total.</li>
  *   <li>Rate: 30 real-time seconds = 1 game hour.</li>
- *   <li>Total real-time duration: 48 * 30 seconds = 1440.0 seconds.</li>
+ *   <li>Total real-time duration: 36 * 30 seconds = 1080.0 seconds (18 real minutes).</li>
  *   <li>Time is clamped at 0.0 seconds and never goes negative.</li>
  * </ul>
  * </p>
  */
 public class TimeManager {
-    public static final float INITIAL_GAME_HOURS = 48.0f;
+    public static final float INITIAL_GAME_HOURS = 36.0f;
     public static final float SECONDS_PER_GAME_HOUR = 30.0f;
-    public static final float INITIAL_REMAINING_SECONDS = INITIAL_GAME_HOURS * SECONDS_PER_GAME_HOUR; // 1440.0f
+    public static final float INITIAL_REMAINING_SECONDS = INITIAL_GAME_HOURS * SECONDS_PER_GAME_HOUR; // 1080.0f (18 real minutes)
 
     private float remainingSeconds;
 
     /**
-     * Constructs a new TimeManager initialized to 48 game hours (1440.0 real-time seconds).
+     * Constructs a new TimeManager initialized to 36 game hours (1080.0 real-time seconds = 18 real minutes).
      */
     public TimeManager() {
         this(INITIAL_REMAINING_SECONDS);
@@ -103,15 +103,48 @@ public class TimeManager {
     }
 
     /**
-     * Returns the formatted string representation of remaining time, e.g. "1d 23h", "1d 05h", "0d 23h".
+     * Quantizes remaining game time to 15 game-minute intervals (7.5 real seconds each).
+     * Sequence: 36 : 00 -> 35 : 45 -> 35 : 30 -> 35 : 15 -> 35 : 00 -> ... -> 00 : 00.
+     *
+     * @return stepped remaining game minutes integer
+     */
+    public int getSteppedTotalMinutes() {
+        if (remainingSeconds <= 0.0f) {
+            return 0;
+        }
+        float secondsPer15Min = SECONDS_PER_GAME_HOUR / 4.0f; // 7.5 real seconds = 15 game minutes
+        int intervals = (int) Math.ceil((remainingSeconds - 0.001f) / secondsPer15Min);
+        int totalMinutes = intervals * 15;
+        int maxMinutes = (int) (INITIAL_GAME_HOURS * 60);
+        return Math.min(maxMinutes, Math.max(0, totalMinutes));
+    }
+
+    /**
+     * Returns the remaining game hours for the HH : MM HUD display, stepped every 15 game minutes (clamped >= 0).
+     *
+     * @return remaining game hours integer (e.g. 36 down to 0)
+     */
+    public int getDisplayHours() {
+        return getSteppedTotalMinutes() / 60;
+    }
+
+    /**
+     * Returns the remaining game minutes for the HH : MM HUD display, stepped every 15 game minutes (0, 15, 30, 45).
+     *
+     * @return remaining game minutes integer (0, 15, 30, or 45)
+     */
+    public int getDisplayMinutes() {
+        return getSteppedTotalMinutes() % 60;
+    }
+
+    /**
+     * Returns the formatted string representation of remaining time in HH : MM format with two digits each,
+     * stepped every 15 game minutes (e.g. "36 : 00", "35 : 45", "35 : 30", "35 : 15", "35 : 00").
      *
      * @return formatted HUD string representation
      */
     public String getFormattedTime() {
-        int totalHours = (int) (remainingSeconds / SECONDS_PER_GAME_HOUR);
-        int days = totalHours / 24;
-        int hours = totalHours % 24;
-        return String.format("%dd %02dh", days, hours);
+        return String.format("%02d : %02d", getDisplayHours(), getDisplayMinutes());
     }
 
     /**
@@ -124,7 +157,7 @@ public class TimeManager {
     }
 
     /**
-     * Resets the timer back to its initial state of 48 game hours (1440.0 seconds).
+     * Resets the timer back to its initial state of 36 game hours (1080.0 seconds = 18 real minutes).
      */
     public void reset() {
         this.remainingSeconds = INITIAL_REMAINING_SECONDS;
