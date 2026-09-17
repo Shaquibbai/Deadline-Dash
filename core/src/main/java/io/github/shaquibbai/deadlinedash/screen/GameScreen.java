@@ -72,6 +72,7 @@ public class GameScreen implements Screen {
     // Quest System Component
     private QuestManager questManager;
     private io.github.shaquibbai.deadlinedash.quest.Quest2Controller quest2Controller;
+    private io.github.shaquibbai.deadlinedash.quest.IntruderQuestController intruderQuestController;
 
     // Ending System Components
     private EndingController endingController;
@@ -135,6 +136,7 @@ public class GameScreen implements Screen {
     private void initQuestSystem() {
         questManager = new QuestManager(AssetPaths.QUEST_1);
         quest2Controller = new io.github.shaquibbai.deadlinedash.quest.Quest2Controller(AssetPaths.QUEST_2);
+        intruderQuestController = new io.github.shaquibbai.deadlinedash.quest.IntruderQuestController();
         endingController = new EndingController();
 
         questManager.setQuestCompletionListener((questId, total) -> {
@@ -146,6 +148,7 @@ public class GameScreen implements Screen {
             checkEarlyWinEnding();
         });
 
+
         dialogueManager.setCompletionListener((dialogueId, npc) -> {
             String npcName = npc != null ? npc.getName() : "";
             String toastMsg = questManager.onDialogueCompleted(dialogueId, npcName, backpack, repSystem);
@@ -153,6 +156,7 @@ public class GameScreen implements Screen {
                 itemConfirmationDialog.showToast(toastMsg);
             }
             quest2Controller.onDialogueCompleted(dialogueId, npcName, backpack, repSystem, timeManager);
+            intruderQuestController.onDialogueCompleted(dialogueId, npcName, repSystem);
 
             syncAllMapNpcs();
         });
@@ -163,7 +167,9 @@ public class GameScreen implements Screen {
         if (mapManager == null) return;
         for (NPC npc : mapManager.getNpcs()) {
             String name = npc.getName();
-            if (quest2Controller != null && quest2Controller.isManagedNpc(name)) {
+            if (intruderQuestController != null && intruderQuestController.isManagedNpc(name)) {
+                npc.setInteractable(intruderQuestController.isNpcInteractable(name));
+            } else if (quest2Controller != null && quest2Controller.isManagedNpc(name)) {
                 npc.setInteractable(quest2Controller.isNpcInteractable(name));
             } else if (questManager != null) {
                 questManager.syncNpcInteractability(npc);
@@ -174,7 +180,9 @@ public class GameScreen implements Screen {
     private String getActiveDialogueForNpc(NPC npc) {
         if (npc == null) return "";
         String name = npc.getName();
-        if (quest2Controller != null && quest2Controller.isManagedNpc(name)) {
+        if (intruderQuestController != null && intruderQuestController.isManagedNpc(name)) {
+            return intruderQuestController.getDialogueForNpc(name, npc.getConfig().getDialogue());
+        } else if (quest2Controller != null && quest2Controller.isManagedNpc(name)) {
             return quest2Controller.getDialogueForNpc(name, npc.getConfig().getDialogue(), backpack);
         } else if (questManager != null) {
             return questManager.getDialogueForNpc(npc, backpack);
@@ -376,7 +384,7 @@ public class GameScreen implements Screen {
         camera.zoom = MathUtils.clamp(camera.zoom, MIN_ZOOM, MAX_ZOOM);
 
         boolean isF3Pressed = Gdx.input.isKeyPressed(Input.Keys.F3);
-        boolean isUiModalActive = itemConfirmationDialog.isActive() || backpackUI.isOpen() || dialogueManager.isActive() || isTransitionConfirmationActive || (quest2Controller != null && quest2Controller.isMatchPromptActive());
+        boolean isUiModalActive = itemConfirmationDialog.isActive() || backpackUI.isOpen() || dialogueManager.isActive() || isTransitionConfirmationActive || (quest2Controller != null && quest2Controller.isMatchPromptActive()) || (intruderQuestController != null && (intruderQuestController.isStartPromptActive() || intruderQuestController.isIntruderAlertActive() || intruderQuestController.isCompletionBannerActive()));
 
         if (isF3Pressed && !isUiModalActive) {
             // Free Camera Debug Mode: WASD moves camera directly across map
@@ -446,6 +454,42 @@ public class GameScreen implements Screen {
             }
         }
 
+        // Handle Intruder Hunt Start Choice YES / NO
+        if (intruderQuestController != null && intruderQuestController.isStartPromptActive()) {
+            boolean yesPressed = Gdx.input.isKeyJustPressed(Input.Keys.Y) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER);
+            boolean noPressed = Gdx.input.isKeyJustPressed(Input.Keys.N) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE);
+
+            if (justClicked) {
+                if (DialogueUI.YES_BUTTON_BOUNDS.contains(hudMousePos.x, hudMousePos.y)) {
+                    yesPressed = true;
+                } else if (DialogueUI.NO_BUTTON_BOUNDS.contains(hudMousePos.x, hudMousePos.y)) {
+                    noPressed = true;
+                }
+            }
+
+            if (yesPressed) {
+                intruderQuestController.onStartChoiceYes();
+                syncAllMapNpcs();
+            } else if (noPressed) {
+                intruderQuestController.onStartChoiceNo();
+                syncAllMapNpcs();
+            }
+        }
+
+        // Handle Intruder Alert Dismissal
+        if (intruderQuestController != null && intruderQuestController.isIntruderAlertActive()) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.F) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || justClicked) {
+                intruderQuestController.dismissIntruderAlert();
+            }
+        }
+
+        // Handle Quest Completion Banner Dismissal
+        if (intruderQuestController != null && intruderQuestController.isCompletionBannerActive()) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || justClicked) {
+                intruderQuestController.dismissCompletionBanner();
+            }
+        }
+
         // Handle Transition Confirmation YES / NO Mouse Clicking
         if (isTransitionConfirmationActive) {
             if (justClicked) {
@@ -474,14 +518,20 @@ public class GameScreen implements Screen {
 
         // Process HUD Backpack icon click (toggle backpack UI)
         if (justClicked && backpackIconBounds.contains(hudMousePos.x, hudMousePos.y)) {
-            if (!itemConfirmationDialog.isActive() && !dialogueManager.isActive() && !isTransitionConfirmationActive && (quest2Controller == null || !quest2Controller.isMatchPromptActive())) {
+            if (!itemConfirmationDialog.isActive() && !dialogueManager.isActive() && !isTransitionConfirmationActive && (quest2Controller == null || !quest2Controller.isMatchPromptActive()) && (intruderQuestController == null || (!intruderQuestController.isStartPromptActive() && !intruderQuestController.isIntruderAlertActive() && !intruderQuestController.isCompletionBannerActive()))) {
                 backpackUI.toggle();
             }
         }
 
-        // ESC key: cancel transition confirmation / close active dialogue / close backpack UI / return to Start Menu (TitleScreen)
+        // ESC key: dismiss completion banner / cancel start prompt / cancel transition confirmation / close active dialogue / close backpack UI / return to Start Menu (TitleScreen)
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            if (quest2Controller != null && quest2Controller.isMatchPromptActive()) {
+            if (intruderQuestController != null && intruderQuestController.isCompletionBannerActive()) {
+                intruderQuestController.dismissCompletionBanner();
+            } else if (intruderQuestController != null && intruderQuestController.isIntruderAlertActive()) {
+                intruderQuestController.dismissIntruderAlert();
+            } else if (intruderQuestController != null && intruderQuestController.isStartPromptActive()) {
+                intruderQuestController.onStartChoiceNo();
+            } else if (quest2Controller != null && quest2Controller.isMatchPromptActive()) {
                 quest2Controller.onMatchChoiceNo();
             } else if (isTransitionConfirmationActive) {
                 cancelTransitionConfirmation();
@@ -494,6 +544,7 @@ public class GameScreen implements Screen {
                 return;
             }
         }
+
 
         // Mouse wheel / arrow key scroll support for Backpack UI
         if (backpackUI.isOpen()) {
@@ -563,7 +614,8 @@ public class GameScreen implements Screen {
             debugFont.setColor(Color.YELLOW);
         }
 
-        // 3. Render Gameplay HUD Backpack Icon and Countdown Timer (Top Right, Clean - Timer positioned ABOVE Backpack Icon)
+        // 3. Render Gameplay HUD: Intruders Counter, Backpack Icon, and Countdown Timer
+        renderIntruderCounterHUD();
         renderTimerHUD();
         renderBackpackHUD();
 
@@ -573,8 +625,17 @@ public class GameScreen implements Screen {
         // 5. Render Centered Item Storage Confirmation Dialog & Toast Notifications
         itemConfirmationDialog.render(batch, hudTitleFont, hudFont, whitePixel, hudMousePos);
 
-        // 6. Render Dialogue UI / Transition Confirmation UI / Football Match Choice UI
-        if (quest2Controller != null && quest2Controller.isMatchPromptActive()) {
+        // 6. Render Dialogue UI / Transition Confirmation UI / Football Match Choice UI / Intruder Hunt Modals
+        if (intruderQuestController != null && intruderQuestController.isCompletionBannerActive()) {
+            dialogueUI.renderQuestCompletionBanner(batch, hudTitleFont, hudFont, whitePixel);
+        } else if (intruderQuestController != null && intruderQuestController.isIntruderAlertActive()) {
+            dialogueUI.renderIntruderAlert(batch, hudTitleFont, hudFont, whitePixel,
+                intruderQuestController.getLastAlertNpcName(),
+                intruderQuestController.getLastAlertRegNumber(),
+                intruderQuestController.getLastAlertFoundCount());
+        } else if (intruderQuestController != null && intruderQuestController.isStartPromptActive()) {
+            dialogueUI.renderConfirmation(batch, hudFont, whitePixel, "Start the Intruder Hunt?", hudMousePos);
+        } else if (quest2Controller != null && quest2Controller.isMatchPromptActive()) {
             dialogueUI.renderConfirmation(batch, hudFont, whitePixel, "Do you want to play the football match now?", hudMousePos);
         } else if (isTransitionConfirmationActive && pendingTransition != null) {
             String promptMsg = getConfirmationText(pendingTransition.getName());
@@ -585,6 +646,52 @@ public class GameScreen implements Screen {
 
         batch.setColor(Color.WHITE); // Ensure batch color state is cleanly reset
         batch.end();
+    }
+
+    /**
+     * Renders top-right gameplay HUD displaying remaining intruders counter.
+     * Positioned cleanly to the left of the countdown timer box.
+     * Timer Box is at X=1155, Y=650, W=94, H=36.
+     * Intruders Box bounds: X=945f, Y=650f, W=195f, H=36f.
+     */
+    private void renderIntruderCounterHUD() {
+        if (intruderQuestController == null) return;
+        if (intruderQuestController.getState() == io.github.shaquibbai.deadlinedash.quest.IntruderQuestController.State.NOT_STARTED) return;
+
+        float boxW = 195f;
+        float boxH = 36f;
+        float boxX = 945f;
+        float boxY = 650f;
+
+        // Dark background panel
+        batch.setColor(0.10f, 0.12f, 0.16f, 0.90f);
+        batch.draw(whitePixel, boxX, boxY, boxW, boxH);
+
+        // Accent border (Crimson red during investigation, Green when complete)
+        boolean isComplete = intruderQuestController.isQuestCompleted();
+        if (isComplete) {
+            batch.setColor(0.25f, 0.90f, 0.45f, 0.85f);
+        } else {
+            batch.setColor(1.0f, 0.30f, 0.30f, 0.85f);
+        }
+        batch.draw(whitePixel, boxX, boxY, boxW, 2);
+        batch.draw(whitePixel, boxX, boxY + boxH - 2, boxW, 2);
+        batch.draw(whitePixel, boxX, boxY, 2, boxH);
+        batch.draw(whitePixel, boxX + boxW - 2, boxY, 2, boxH);
+
+        // Text: e.g. "Intruders: 5 left" / "Intruders: 4 left" ... "Intruders: Complete!"
+        String counterStr = isComplete ? "Intruders: Complete!" : ("Intruders: " + intruderQuestController.getRemainingIntrudersCount() + " left");
+        if (isComplete) {
+            hudTitleFont.setColor(new Color(0.35f, 0.95f, 0.55f, 1.0f));
+        } else {
+            hudTitleFont.setColor(new Color(1.0f, 0.45f, 0.45f, 1.0f));
+        }
+        GlyphLayout layout = new GlyphLayout(hudTitleFont, counterStr);
+        float textX = boxX + (boxW - layout.width) / 2f;
+        float textY = boxY + (boxH + layout.height) / 2f;
+        hudTitleFont.draw(batch, counterStr, textX, textY);
+        hudTitleFont.setColor(Color.WHITE);
+        batch.setColor(Color.WHITE);
     }
 
     /**
@@ -787,11 +894,15 @@ public class GameScreen implements Screen {
 
     private void handleDialogueInput() {
         boolean fJustPressed = Gdx.input.isKeyJustPressed(Input.Keys.F);
+        boolean enterJustPressed = Gdx.input.isKeyJustPressed(Input.Keys.ENTER);
+
         if (dialogueManager.isActive()) {
-            if (fJustPressed) {
+            if (fJustPressed || (enterJustPressed && dialogueManager.isLastLine())) {
                 dialogueManager.advanceDialogue();
             }
-        } else if (!itemConfirmationDialog.isActive() && !backpackUI.isOpen() && !isTransitionConfirmationActive && (quest2Controller == null || !quest2Controller.isMatchPromptActive())) {
+        } else if (!itemConfirmationDialog.isActive() && !backpackUI.isOpen() && !isTransitionConfirmationActive
+            && (quest2Controller == null || !quest2Controller.isMatchPromptActive())
+            && (intruderQuestController == null || (!intruderQuestController.isStartPromptActive() && !intruderQuestController.isIntruderAlertActive() && !intruderQuestController.isCompletionBannerActive()))) {
             if (fJustPressed) {
                 NPC closestNpc = findClosestInteractableNPC();
                 if (closestNpc != null) {
@@ -843,7 +954,9 @@ public class GameScreen implements Screen {
         for (NPC npc : mapManager.getNpcs()) {
             String name = npc.getName();
             io.github.shaquibbai.deadlinedash.quest.QuestMarker marker = io.github.shaquibbai.deadlinedash.quest.QuestMarker.NONE;
-            if (quest2Controller != null && quest2Controller.isManagedNpc(name)) {
+            if (intruderQuestController != null && intruderQuestController.isManagedNpc(name)) {
+                marker = intruderQuestController.getMarkerForNpc(name);
+            } else if (quest2Controller != null && quest2Controller.isManagedNpc(name)) {
                 marker = quest2Controller.getMarkerForNpc(name, backpack);
             } else if (questManager != null) {
                 marker = questManager.getMarkerForNpc(npc, backpack);
@@ -853,10 +966,31 @@ public class GameScreen implements Screen {
                 continue;
             }
 
-            String symbol = marker == io.github.shaquibbai.deadlinedash.quest.QuestMarker.NEW_INTERACTION ? "!" : "?";
-            Color markerColor = marker == io.github.shaquibbai.deadlinedash.quest.QuestMarker.NEW_INTERACTION
-                ? new Color(1.0f, 0.88f, 0.15f, 1.0f) // Bright Yellow
-                : new Color(1.0f, 0.25f, 0.25f, 1.0f); // Bright Red
+            String symbol;
+            Color markerColor;
+            switch (marker) {
+                case QUEST_AVAILABLE:
+                    symbol = "?";
+                    markerColor = new Color(1.0f, 0.88f, 0.15f, 1.0f); // Bright Yellow ?
+                    break;
+                case VALID:
+                    symbol = debugFont.getData().hasGlyph('✓') ? "✓" : "V";
+                    markerColor = new Color(0.25f, 0.95f, 0.40f, 1.0f); // Bright Green ✓
+                    break;
+                case INTRUDER:
+                    symbol = debugFont.getData().hasGlyph('✕') ? "✕" : (debugFont.getData().hasGlyph('X') ? "X" : "x");
+                    markerColor = new Color(1.0f, 0.25f, 0.25f, 1.0f); // Bright Red ✕
+                    break;
+                case NEW_INTERACTION:
+                    symbol = "!";
+                    markerColor = new Color(1.0f, 0.88f, 0.15f, 1.0f); // Bright Yellow !
+                    break;
+                case REMINDER:
+                default:
+                    symbol = "?";
+                    markerColor = new Color(1.0f, 0.25f, 0.25f, 1.0f); // Bright Red ?
+                    break;
+            }
 
             float centerX = npc.getCenterX();
             float topY = npc.getY() + npc.getHeight() + 20f;

@@ -177,6 +177,117 @@ public class DialogueUI {
         font.draw(batch, text, bounds.x + (bounds.width - layout.width) / 2f, bounds.y + (bounds.height + layout.height) / 2f);
     }
 
+    /**
+     * Renders a modal alert for when an intruder is identified.
+     */
+    public void renderIntruderAlert(SpriteBatch batch, BitmapFont titleFont, BitmapFont bodyFont, Texture whitePixel, String npcName, int regNumber, int foundCount) {
+        float alertW = 680f;
+        float alertH = 200f;
+        float alertX = (1280f - alertW) / 2f;
+        float alertY = (720f - alertH) / 2f;
+        float alertHeaderH = 42f;
+
+        // Dim background overlay
+        batch.setColor(0f, 0f, 0f, 0.65f);
+        batch.draw(whitePixel, 0, 0, 1280f, 720f);
+
+        // Container background
+        batch.setColor(0.12f, 0.08f, 0.08f, 0.96f);
+        batch.draw(whitePixel, alertX, alertY, alertW, alertH);
+
+        // Header Background
+        batch.setColor(0.25f, 0.08f, 0.08f, 0.98f);
+        batch.draw(whitePixel, alertX, alertY + alertH - alertHeaderH, alertW, alertHeaderH);
+
+        // Top Accent (Bright Crimson Red)
+        batch.setColor(1.0f, 0.20f, 0.20f, 1.0f);
+        batch.draw(whitePixel, alertX, alertY + alertH - 3f, alertW, 3f);
+
+        // Outer Border
+        batch.setColor(0.85f, 0.25f, 0.25f, 0.90f);
+        batch.draw(whitePixel, alertX, alertY, alertW, 2);
+        batch.draw(whitePixel, alertX, alertY + alertH - 2, alertW, 2);
+        batch.draw(whitePixel, alertX, alertY, 2, alertH);
+        batch.draw(whitePixel, alertX + alertW - 2, alertY, 2, alertH);
+
+        // Header Title
+        titleFont.setColor(new Color(1.0f, 0.35f, 0.35f, 1.0f));
+        layout.setText(titleFont, "🚨 INTRUDER DETECTED!");
+        titleFont.draw(batch, "🚨 INTRUDER DETECTED!", alertX + 24f, alertY + alertH - 12f);
+
+        // Body Text
+        bodyFont.setColor(new Color(0.95f, 0.95f, 0.98f, 1.0f));
+        String line1 = "Target: " + npcName + "   |   Registration No: " + regNumber + " (ODD NUMBER)";
+        String line2 = "Progress: " + foundCount + " / 5 Intruders Identified (" + (5 - foundCount) + " remaining)";
+        bodyFont.draw(batch, line1, alertX + 24f, alertY + alertH - alertHeaderH - 24f);
+        bodyFont.draw(batch, line2, alertX + 24f, alertY + alertH - alertHeaderH - 54f);
+
+        // Animated Prompt [ENTER / F]
+        float pulse = (float) Math.sin(animTimer * 6f) * 0.25f + 0.75f;
+        bodyFont.setColor(1.0f, 0.85f, 0.40f, pulse);
+        String prompt = "[ENTER / F] DISMISS >";
+        layout.setText(bodyFont, prompt);
+        bodyFont.draw(batch, prompt, alertX + alertW - layout.width - 24f, alertY + 22f);
+
+        batch.setColor(Color.WHITE);
+    }
+
+    /**
+     * Renders a celebration modal banner when all 5 intruders have been found.
+     */
+    public void renderQuestCompletionBanner(SpriteBatch batch, BitmapFont titleFont, BitmapFont bodyFont, Texture whitePixel) {
+        float bannerW = 740f;
+        float bannerH = 220f;
+        float bannerX = (1280f - bannerW) / 2f;
+        float bannerY = (720f - bannerH) / 2f;
+        float bannerHeaderH = 46f;
+
+        // Dim background overlay
+        batch.setColor(0f, 0f, 0f, 0.70f);
+        batch.draw(whitePixel, 0, 0, 1280f, 720f);
+
+        // Container background
+        batch.setColor(0.09f, 0.12f, 0.16f, 0.96f);
+        batch.draw(whitePixel, bannerX, bannerY, bannerW, bannerH);
+
+        // Header Background
+        batch.setColor(0.14f, 0.20f, 0.28f, 0.98f);
+        batch.draw(whitePixel, bannerX, bannerY + bannerH - bannerHeaderH, bannerW, bannerHeaderH);
+
+        // Top Accent (Gold / Yellow)
+        batch.setColor(0.95f, 0.78f, 0.25f, 1.0f);
+        batch.draw(whitePixel, bannerX, bannerY + bannerH - 3f, bannerW, 3f);
+
+        // Outer Border
+        batch.setColor(0.95f, 0.78f, 0.25f, 0.90f);
+        batch.draw(whitePixel, bannerX, bannerY, bannerW, 2);
+        batch.draw(whitePixel, bannerX, bannerY + bannerH - 2, bannerW, 2);
+        batch.draw(whitePixel, bannerX, bannerY, 2, bannerH);
+        batch.draw(whitePixel, bannerX + bannerW - 2, bannerY, 2, bannerH);
+
+        // Header Title
+        titleFont.setColor(new Color(1.0f, 0.88f, 0.25f, 1.0f));
+        titleFont.draw(batch, "🏆 QUEST COMPLETE — INTRUDER HUNT", bannerX + 24f, bannerY + bannerH - 14f);
+
+        // Body Text
+        bodyFont.setColor(new Color(0.35f, 0.95f, 0.55f, 1.0f));
+        bodyFont.draw(batch, "✅ ALL 5 INTRUDERS FOUND!", bannerX + 24f, bannerY + bannerH - bannerHeaderH - 24f);
+
+        bodyFont.setColor(new Color(0.92f, 0.92f, 0.96f, 1.0f));
+        bodyFont.draw(batch, "All unauthorized individuals have been reported to security.", bannerX + 24f, bannerY + bannerH - bannerHeaderH - 52f);
+        bodyFont.draw(batch, "Reward: +35 REP awarded to Talha.", bannerX + 24f, bannerY + bannerH - bannerHeaderH - 76f);
+
+        // Animated Prompt [ESC / ENTER]
+        float pulse = (float) Math.sin(animTimer * 6f) * 0.25f + 0.75f;
+        bodyFont.setColor(0.70f, 0.85f, 1.0f, pulse);
+        String prompt = "[ESC / ENTER] BACK TO MAP >";
+        layout.setText(bodyFont, prompt);
+        bodyFont.draw(batch, prompt, bannerX + bannerW - layout.width - 24f, bannerY + 22f);
+
+        batch.setColor(Color.WHITE);
+    }
+
     public void dispose() {
     }
 }
+

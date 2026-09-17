@@ -509,6 +509,300 @@
         "text": "Yeah, whatever. Just finish the project within the deadline."
       }
     ]
+  },
+
+  "intruder_quest_intro": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Hey Shaquib, what's up? You didn't inform us about the project work... the deadline is near... everything ok?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Hey man. I am stuck with this event. I'm supposed to do some volunteer work for the event today."
+      },
+      {
+        "speaker": "player",
+        "text": "Volunteer work? Now?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Yeah. The event manager assigned me to find some intruders who somehow got into the function."
+      },
+      {
+        "speaker": "player",
+        "text": "Intruders?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Apparently there are more people inside than there should be, and I need to find them."
+      },
+      {
+        "speaker": "player",
+        "text": "Don't worry buddy. I'll do it for you."
+      },
+      {
+        "speaker": "npc",
+        "text": "Oh! That will be a great help. Alright. So listen carefully."
+      },
+      {
+        "speaker": "npc",
+        "text": "There are 10 people inside the event area."
+      },
+      {
+        "speaker": "player",
+        "text": "Okay..."
+      },
+      {
+        "speaker": "npc",
+        "text": "But only 5 people actually registered for the function."
+      },
+      {
+        "speaker": "player",
+        "text": "So that means..."
+      },
+      {
+        "speaker": "npc",
+        "text": "Exactly. Five of them are intruders."
+      },
+      {
+        "speaker": "player",
+        "text": "How do I figure out who's registered?"
+      },
+      {
+        "speaker": "npc",
+        "text": "There's one easy way."
+      },
+      {
+        "speaker": "npc",
+        "text": "All the valid registration numbers are even numbers."
+      },
+      {
+        "speaker": "player",
+        "text": "Alright. You go focus on that project."
+      }
+    ]
+  },
+
+  "intruder_giver_waiting": {
+    "lines": [
+      {
+        "speaker": "npc",
+        "text": "Find all 5 intruders with odd registration numbers! Good luck."
+      }
+    ]
+  },
+
+  "intruder_giver_complete": {
+    "lines": [
+      {
+        "speaker": "npc",
+        "text": "Thanks a lot Talha! All 5 intruders have been caught."
+      }
+    ]
+  },
+
+  "intruder_npc_124": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Hey, what's your registration number?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Mine? It's 124."
+      },
+      {
+        "speaker": "player",
+        "text": "124... even."
+      },
+      {
+        "speaker": "player",
+        "text": "Alright, you're good."
+      }
+    ]
+  },
+
+  "intruder_npc_208": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Hey, registration number?"
+      },
+      {
+        "speaker": "npc",
+        "text": "208."
+      },
+      {
+        "speaker": "player",
+        "text": "Even. You're fine."
+      }
+    ]
+  },
+
+  "intruder_npc_316": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "What's your registration number?"
+      },
+      {
+        "speaker": "npc",
+        "text": "316."
+      },
+      {
+        "speaker": "player",
+        "text": "316... okay."
+      },
+      {
+        "speaker": "player",
+        "text": "You can stay."
+      }
+    ]
+  },
+
+  "intruder_npc_422": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Hey, what's your registration number?"
+      },
+      {
+        "speaker": "npc",
+        "text": "422."
+      },
+      {
+        "speaker": "player",
+        "text": "Even. Move along."
+      }
+    ]
+  },
+
+  "intruder_npc_276": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Registration number?"
+      },
+      {
+        "speaker": "npc",
+        "text": "276."
+      },
+      {
+        "speaker": "player",
+        "text": "276. Valid."
+      }
+    ]
+  },
+
+  "intruder_npc_137": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Excuse me, what's your registration number?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Uh... 137."
+      },
+      {
+        "speaker": "player",
+        "text": "137?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Yeah. Why?"
+      },
+      {
+        "speaker": "player",
+        "text": "Nothing... just being odd isn't legal today. Security!!"
+      }
+    ]
+  },
+
+  "intruder_npc_151": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Registration number?"
+      },
+      {
+        "speaker": "npc",
+        "text": "151."
+      },
+      {
+        "speaker": "player",
+        "text": "151... got you mister intruder!"
+      }
+    ]
+  },
+
+  "intruder_npc_167": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Excuse me, what's your registration number?"
+      },
+      {
+        "speaker": "npc",
+        "text": "167."
+      },
+      {
+        "speaker": "player",
+        "text": "167?"
+      },
+      {
+        "speaker": "npc",
+        "text": "Yeah."
+      },
+      {
+        "speaker": "player",
+        "text": "That's odd. Security!"
+      }
+    ]
+  },
+
+  "intruder_npc_189": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "And yours?"
+      },
+      {
+        "speaker": "npc",
+        "text": "189."
+      },
+      {
+        "speaker": "player",
+        "text": "You might want to explain yourself."
+      }
+    ]
+  },
+
+  "intruder_npc_205": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "Registration number, please?"
+      },
+      {
+        "speaker": "npc",
+        "text": "It's 205."
+      },
+      {
+        "speaker": "player",
+        "text": "205? That's odd. You're the final intruder!"
+      }
+    ]
+  },
+
+  "intruder_npc_already_checked": {
+    "lines": [
+      {
+        "speaker": "npc",
+        "text": "I've already shown you my registration."
+      }
+    ]
   }
 
 }
