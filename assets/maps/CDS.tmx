@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="60" height="60" tilewidth="64" tileheight="64" infinite="0" nextlayerid="6" nextobjectid="7">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="60" height="60" tilewidth="64" tileheight="64" infinite="0" nextlayerid="7" nextobjectid="21">
  <tileset firstgid="1" source="../tilesets/cds.tsx"/>
  <layer id="2" name="Tile Layer 2" width="60" height="60">
   <data encoding="csv">
@@ -143,7 +143,7 @@
   <object id="5" name="CDSInsideBack_to_CDSBack" x="1870" y="1892" width="94" height="274"/>
  </objectgroup>
  <objectgroup id="5" name="NPCs">
-  <object id="6" type="NPC" x="1445.94" y="2483.52" width="103.03" height="79.9997">
+  <object id="6" name="Shopkeeper" type="NPC" x="1445.94" y="2483.52" width="103.03" height="79.9997">
    <properties>
     <property name="dialogue" value="Shopkeeper_intro"/>
     <property name="idleAnimation" type="bool" value="false"/>
@@ -152,6 +152,96 @@
     <property name="model" value="Male01_Left"/>
     <property name="name" value="Shopkeeper"/>
     <property name="quest" value="Quest1"/>
+   </properties>
+  </object>
+  <object id="9" name="Tanvir" type="NPC" x="2439.33" y="662" width="78.6667" height="70">
+   <properties>
+    <property name="dialogue" value="intruder_npc_124"/>
+    <property name="interactionRange" type="float" value="150"/>
+    <property name="model" value="Male01_Forward"/>
+    <property name="name" value="Tanvir"/>
+    <property name="quest" value="Quest3"/>
+   </properties>
+  </object>
+  <object id="10" name="Tanvir" type="NPC" x="2591.33" y="667" width="78.6667" height="70">
+   <properties>
+    <property name="dialogue" value="intruder_npc_208"/>
+    <property name="interactionRange" type="float" value="150"/>
+    <property name="model" value="Male01_Forward"/>
+    <property name="name" value="Tanvir"/>
+    <property name="quest" value="Quest3"/>
+   </properties>
+  </object>
+  <object id="11" name="Shadman" type="NPC" x="2438.33" y="994.333" width="78.6667" height="70">
+   <properties>
+    <property name="dialogue" value="intruder_npc_137"/>
+    <property name="interactionRange" type="float" value="150"/>
+    <property name="model" value="Male01_Forward"/>
+    <property name="name" value="Shadman"/>
+    <property name="quest" value="Quest3"/>
+   </properties>
+  </object>
+  <object id="14" name="Nafis" type="NPC" x="2758.67" y="661" width="78.6667" height="70">
+   <properties>
+    <property name="dialogue" value="intruder_npc_422"/>
+    <property name="interactionRange" type="float" value="150"/>
+    <property name="model" value="Male01_Forward"/>
+    <property name="name" value="Nafis"/>
+    <property name="quest" value="Quest3"/>
+   </properties>
+  </object>
+  <object id="15" name="Aayan" type="NPC" x="2934.67" y="659" width="78.6667" height="70">
+   <properties>
+    <property name="dialogue" value="intruder_npc_316"/>
+    <property name="interactionRange" type="float" value="150"/>
+    <property name="model" value="Male01_Forward"/>
+    <property name="name" value="Aayan"/>
+    <property name="quest" value="Quest3"/>
+   </properties>
+  </object>
+  <object id="16" name="Sami" type="NPC" x="3076.67" y="667" width="78.6667" height="70">
+   <properties>
+    <property name="dialogue" value="intruder_npc_276"/>
+    <property name="interactionRange" type="float" value="150"/>
+    <property name="model" value="Male01_Forward"/>
+    <property name="name" value="Sami"/>
+    <property name="quest" value="Quest3"/>
+   </properties>
+  </object>
+  <object id="17" name="Kazi" type="NPC" x="2570.67" y="999" width="78.6667" height="70">
+   <properties>
+    <property name="dialogue" value="intruder_npc_151"/>
+    <property name="interactionRange" type="float" value="150"/>
+    <property name="model" value="Male01_Forward"/>
+    <property name="name" value="Kazi"/>
+    <property name="quest" value="Quest3"/>
+   </properties>
+  </object>
+  <object id="18" name="Adnan" type="NPC" x="2706.67" y="985" width="78.6667" height="70">
+   <properties>
+    <property name="dialogue" value="intruder_npc_167"/>
+    <property name="interactionRange" type="float" value="150"/>
+    <property name="model" value="Male01_Forward"/>
+    <property name="name" value="Adnan"/>
+    <property name="quest" value="Quest3"/>
+   </properties>
+  </object>
+  <object id="19" name="Fahim" type="NPC" x="2890.67" y="981" width="78.6667" height="70">
+   <properties>
+    <property name="dialogue" value="intruder_npc_189"/>
+    <property name="interactionRange" type="float" value="150"/>
+    <property name="model" value="Male01_Forward"/>
+    <property name="name" value="Fahim"/>
+    <property name="quest" value="Quest3"/>
+   </properties>
+  </object>
+  <object id="20" name="Tariq" type="NPC" x="3026.67" y="981" width="78.6667" height="70">
+   <properties>
+    <property name="dialogue" value="intruder_npc_205"/>
+    <property name="interactionRange" type="float" value="150"/>
+    <property name="model" value="Male01_Forward"/>
+    <property name="name" value="Tariq"/>
+    <property name="quest" value="Quest3"/>
    </properties>
   </object>
  </objectgroup>
