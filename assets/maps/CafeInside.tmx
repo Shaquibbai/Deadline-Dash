@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="64" tileheight="64" infinite="0" nextlayerid="8" nextobjectid="30">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="64" tileheight="64" infinite="0" nextlayerid="8" nextobjectid="38">
  <tileset firstgid="1" source="../tilesets/cafe.tsx"/>
- <objectgroup id="7" name="NPCs"/>
  <layer id="1" name="Tile Layer 1" width="30" height="20">
   <data encoding="csv">
 2684354873,1610612832,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612856,1610612880,1610612904,1610612928,1610612952,1610612832,1610612856,3221225785,
@@ -56,6 +55,38 @@
   <object id="27" name="walls" x="510" y="410" width="46" height="98"/>
   <object id="28" name="walls" x="514" y="665" width="46" height="98"/>
   <object id="29" name="walls" x="510" y="888" width="46" height="98"/>
+ </objectgroup>
+ <objectgroup id="7" name="NPCs">
+  <object id="30" type="NPC" x="1312.67" y="266.667" width="49.6667" height="42.6667">
+   <properties>
+    <property name="model" value="Male10_Forward"/>
+   </properties>
+  </object>
+  <object id="32" type="NPC" x="1343.17" y="296" width="49.6667" height="42.6667">
+   <properties>
+    <property name="model" value="Male03_Left"/>
+   </properties>
+  </object>
+  <object id="33" type="NPC" x="1293.17" y="300.667" width="49.6667" height="42.6667">
+   <properties>
+    <property name="model" value="Male12_Right"/>
+   </properties>
+  </object>
+  <object id="34" type="NPC" x="1585.33" y="328.667" width="69" height="55">
+   <properties>
+    <property name="model" value="Male11_Forward"/>
+   </properties>
+  </object>
+  <object id="35" type="NPC" x="1540" y="905.333" width="64" height="40">
+   <properties>
+    <property name="model" value="Male06_Backward"/>
+   </properties>
+  </object>
+  <object id="37" type="NPC" x="1539.33" y="348.667" width="56" height="57.3333">
+   <properties>
+    <property name="model" value="Male07_Forward"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="3" name="SceneTransitions">
   <object id="3" name="CafeInsideRight_to_CafeRight" x="1512.83" y="59" width="214.833" height="60.3333"/>

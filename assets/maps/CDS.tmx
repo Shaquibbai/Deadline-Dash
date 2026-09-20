@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="60" height="60" tilewidth="64" tileheight="64" infinite="0" nextlayerid="8" nextobjectid="31">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="60" height="60" tilewidth="64" tileheight="64" infinite="0" nextlayerid="8" nextobjectid="55">
  <tileset firstgid="1" source="../tilesets/cds.tsx"/>
  <layer id="2" name="Tile Layer 2" width="60" height="60">
   <data encoding="csv">
@@ -149,99 +149,184 @@
     <property name="idleAnimation" type="bool" value="false"/>
     <property name="interactable" type="bool" value="false"/>
     <property name="interactionRange" type="float" value="100"/>
-    <property name="model" value="Male01_Left"/>
+    <property name="model" value="Male13_Right"/>
     <property name="name" value="Shopkeeper"/>
     <property name="quest" value="Quest1"/>
    </properties>
   </object>
-  <object id="9" name="Tanvir" type="NPC" x="2439.33" y="662" width="78.6667" height="70">
+  <object id="9" name="Tanvir" type="NPC" x="2394.36" y="2642.85" width="78.6667" height="70">
    <properties>
     <property name="dialogue" value="intruder_npc_124"/>
     <property name="interactionRange" type="float" value="150"/>
-    <property name="model" value="Male01_Forward"/>
+    <property name="model" value="Male02_Forward"/>
     <property name="name" value="Tanvir"/>
     <property name="quest" value="Quest3"/>
    </properties>
   </object>
-  <object id="10" name="Tanvir" type="NPC" x="2591.33" y="667" width="78.6667" height="70">
+  <object id="10" name="Farhan" type="NPC" x="2455.69" y="2678.15" width="78.6667" height="70">
    <properties>
     <property name="dialogue" value="intruder_npc_208"/>
     <property name="interactionRange" type="float" value="150"/>
-    <property name="model" value="Male01_Forward"/>
-    <property name="name" value="Tanvir"/>
+    <property name="model" value="Male07_Forward"/>
+    <property name="name" value="Farhan"/>
     <property name="quest" value="Quest3"/>
    </properties>
   </object>
-  <object id="11" name="Shadman" type="NPC" x="2438.33" y="994.333" width="78.6667" height="70">
+  <object id="11" name="Shadman" type="NPC" x="2260.33" y="741.848" width="78.6667" height="70">
    <properties>
     <property name="dialogue" value="intruder_npc_137"/>
-    <property name="interactionRange" type="float" value="150"/>
-    <property name="model" value="Male01_Forward"/>
+    <property name="interactionRange" type="float" value="100"/>
+    <property name="model" value="Male09_Left"/>
     <property name="name" value="Shadman"/>
     <property name="quest" value="Quest3"/>
    </properties>
   </object>
-  <object id="14" name="Nafis" type="NPC" x="2758.67" y="661" width="78.6667" height="70">
+  <object id="14" name="Nafis" type="NPC" x="2129.82" y="753.727" width="78.6667" height="70">
    <properties>
     <property name="dialogue" value="intruder_npc_422"/>
     <property name="interactionRange" type="float" value="150"/>
-    <property name="model" value="Male01_Forward"/>
+    <property name="model" value="Male12_Right"/>
     <property name="name" value="Nafis"/>
     <property name="quest" value="Quest3"/>
    </properties>
   </object>
-  <object id="15" name="Aayan" type="NPC" x="2934.67" y="659" width="78.6667" height="70">
+  <object id="15" name="Aayan" type="NPC" x="2839.03" y="1926.97" width="78.6667" height="70">
    <properties>
     <property name="dialogue" value="intruder_npc_316"/>
     <property name="interactionRange" type="float" value="150"/>
-    <property name="model" value="Male01_Forward"/>
+    <property name="model" value="Male05_Forward"/>
     <property name="name" value="Aayan"/>
     <property name="quest" value="Quest3"/>
    </properties>
   </object>
-  <object id="16" name="Sami" type="NPC" x="3076.67" y="667" width="78.6667" height="70">
+  <object id="16" name="Sami" type="NPC" x="2876.91" y="1966.45" width="78.6667" height="70">
    <properties>
     <property name="dialogue" value="intruder_npc_276"/>
     <property name="interactionRange" type="float" value="150"/>
-    <property name="model" value="Male01_Forward"/>
+    <property name="model" value="Male08_Left"/>
     <property name="name" value="Sami"/>
     <property name="quest" value="Quest3"/>
    </properties>
   </object>
-  <object id="17" name="Kazi" type="NPC" x="2570.67" y="999" width="78.6667" height="70">
+  <object id="17" name="Kazi" type="NPC" x="2193.76" y="702.697" width="78.6667" height="70">
    <properties>
     <property name="dialogue" value="intruder_npc_151"/>
-    <property name="interactionRange" type="float" value="150"/>
-    <property name="model" value="Male01_Forward"/>
+    <property name="interactionRange" type="float" value="100"/>
+    <property name="model" value="Male04_Forward"/>
     <property name="name" value="Kazi"/>
     <property name="quest" value="Quest3"/>
    </properties>
   </object>
-  <object id="18" name="Adnan" type="NPC" x="2706.67" y="985" width="78.6667" height="70">
+  <object id="18" name="Adnan" type="NPC" x="2407.91" y="2746.52" width="78.6667" height="70">
    <properties>
     <property name="dialogue" value="intruder_npc_167"/>
     <property name="interactionRange" type="float" value="150"/>
-    <property name="model" value="Male01_Forward"/>
+    <property name="model" value="Male03_Backward"/>
     <property name="name" value="Adnan"/>
     <property name="quest" value="Quest3"/>
    </properties>
   </object>
-  <object id="19" name="Fahim" type="NPC" x="2890.67" y="981" width="78.6667" height="70">
+  <object id="19" name="Fahim" type="NPC" x="2201.64" y="806.879" width="78.6667" height="70">
    <properties>
     <property name="dialogue" value="intruder_npc_189"/>
     <property name="interactionRange" type="float" value="150"/>
-    <property name="model" value="Male01_Forward"/>
+    <property name="model" value="Male06_Backward"/>
     <property name="name" value="Fahim"/>
     <property name="quest" value="Quest3"/>
    </properties>
   </object>
-  <object id="20" name="Tariq" type="NPC" x="3026.67" y="981" width="78.6667" height="70">
+  <object id="20" name="Tariq" type="NPC" x="2782.82" y="1982.94" width="78.6667" height="70">
    <properties>
     <property name="dialogue" value="intruder_npc_205"/>
     <property name="interactionRange" type="float" value="150"/>
-    <property name="model" value="Male01_Forward"/>
+    <property name="model" value="Male11_Right"/>
     <property name="name" value="Tariq"/>
     <property name="quest" value="Quest3"/>
+   </properties>
+  </object>
+  <object id="31" type="NPC" x="3071.73" y="1310.24" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female07_Right"/>
+   </properties>
+  </object>
+  <object id="36" type="NPC" x="3128.06" y="1246.91" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female10_Forward"/>
+   </properties>
+  </object>
+  <object id="37" type="NPC" x="3093.39" y="1382.91" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female09_Backward"/>
+   </properties>
+  </object>
+  <object id="38" type="NPC" x="3160.06" y="1394.24" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female08_Backward"/>
+   </properties>
+  </object>
+  <object id="39" type="NPC" x="3185.73" y="1314.24" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female11_Left"/>
+   </properties>
+  </object>
+  <object id="41" type="NPC" x="2196.67" y="2150" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female03_Right"/>
+   </properties>
+  </object>
+  <object id="42" type="NPC" x="2248" y="2111.67" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female02_Forward"/>
+   </properties>
+  </object>
+  <object id="43" type="NPC" x="2194.33" y="2226.67" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Male09_Right"/>
+   </properties>
+  </object>
+  <object id="44" type="NPC" x="2265" y="2248.67" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Male06_Backward"/>
+   </properties>
+  </object>
+  <object id="45" type="NPC" x="2303.67" y="2118.01" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Male10_Left"/>
+   </properties>
+  </object>
+  <object id="46" type="NPC" x="2328.67" y="2180" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female12_Left"/>
+   </properties>
+  </object>
+  <object id="47" type="NPC" x="2813.33" y="611.333" width="78.6667" height="88">
+   <properties>
+    <property name="model" value="Male04_Right"/>
+   </properties>
+  </object>
+  <object id="49" type="NPC" x="2882" y="614.667" width="78.6667" height="88">
+   <properties>
+    <property name="model" value="Female04_Left"/>
+   </properties>
+  </object>
+  <object id="50" type="NPC" x="1627.39" y="3327.76" width="127.273" height="93.9394">
+   <properties>
+    <property name="model" value="Male03_Backward"/>
+   </properties>
+  </object>
+  <object id="52" type="NPC" x="1820.36" y="3129.03" width="127.273" height="93.9394">
+   <properties>
+    <property name="model" value="Female11_Right"/>
+   </properties>
+  </object>
+  <object id="53" type="NPC" x="1593.7" y="2245.7" width="127.273" height="93.9394">
+   <properties>
+    <property name="model" value="Female10_Left"/>
+   </properties>
+  </object>
+  <object id="54" type="NPC" x="1966.36" y="1939.03" width="127.273" height="93.9394">
+   <properties>
+    <property name="model" value="Male11_Right"/>
    </properties>
   </object>
  </objectgroup>
