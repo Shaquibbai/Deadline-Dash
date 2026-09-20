@@ -656,7 +656,7 @@ public class GameScreen implements Screen {
      */
     private void renderIntruderCounterHUD() {
         if (intruderQuestController == null) return;
-        if (intruderQuestController.getState() == io.github.shaquibbai.deadlinedash.quest.IntruderQuestController.State.NOT_STARTED) return;
+        if (intruderQuestController.getState() != io.github.shaquibbai.deadlinedash.quest.IntruderQuestController.State.INVESTIGATION) return;
 
         float boxW = 195f;
         float boxH = 36f;

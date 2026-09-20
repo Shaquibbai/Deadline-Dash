@@ -515,7 +515,7 @@
     "lines": [
       {
         "speaker": "player",
-        "text": "Hey Shaquib, what's up? You didn't inform us about the project work... the deadline is near... everything ok?"
+        "text": "Hey Shihab, what's up? You didn't inform us about the project work... the deadline is near... everything ok?"
       },
       {
         "speaker": "npc",
@@ -597,7 +597,7 @@
     "lines": [
       {
         "speaker": "npc",
-        "text": "Thanks a lot Talha! All 5 intruders have been caught."
+        "text": "Thanks a lot Shaquib! All 5 intruders have been caught."
       }
     ]
   },

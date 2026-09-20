@@ -275,7 +275,7 @@ public class DialogueUI {
 
         bodyFont.setColor(new Color(0.92f, 0.92f, 0.96f, 1.0f));
         bodyFont.draw(batch, "All unauthorized individuals have been reported to security.", bannerX + 24f, bannerY + bannerH - bannerHeaderH - 52f);
-        bodyFont.draw(batch, "Reward: +35 REP awarded to Talha.", bannerX + 24f, bannerY + bannerH - bannerHeaderH - 76f);
+        bodyFont.draw(batch, "Reward: +35 REP awarded to Shaquib.", bannerX + 24f, bannerY + bannerH - bannerHeaderH - 76f);
 
         // Animated Prompt [ESC / ENTER]
         float pulse = (float) Math.sin(animTimer * 6f) * 0.25f + 0.75f;
