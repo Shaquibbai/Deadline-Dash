@@ -9,11 +9,11 @@ import java.util.Map;
 /**
  * Controller for Quest: Intruder Detection.
  * Manages quest states (NOT_STARTED, INVESTIGATION, COMPLETED),
- * Shaquib quest giver interactions, the 10 event NPCs and their registration numbers,
+ * Shihab quest giver interactions, the 10 event NPCs and their registration numbers,
  * dynamic overhead markers (Yellow ?, Green ✓, Red ✕), and remaining intruder calculations.
  */
 public class IntruderQuestController {
-    public static final String QUEST_GIVER = "Shaquib";
+    public static final String QUEST_GIVER = "Shihab";
 
     public static final String DIALOGUE_GIVER_INTRO = "intruder_quest_intro";
     public static final String DIALOGUE_GIVER_WAITING = "intruder_giver_waiting";

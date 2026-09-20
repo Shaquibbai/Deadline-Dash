@@ -3035,14 +3035,14 @@
     <property name="quest" value="Quest2"/>
    </properties>
   </object>
-  <object id="440" name="Shaquib" type="NPC" x="7144.24" y="16612.9" width="73.3333" height="77.3333">
+  <object id="440" name="Shihab" type="NPC" x="7144.24" y="16612.9" width="73.3333" height="77.3333">
    <properties>
     <property name="dialogue" value="intruder_quest_intro"/>
     <property name="idleAnimation" type="bool" value="false"/>
     <property name="interactable" type="bool" value="true"/>
     <property name="interactionRange" type="float" value="150"/>
     <property name="model" value="Male01_Forward"/>
-    <property name="name" value="Shaquib"/>
+    <property name="name" value="Shihab"/>
     <property name="quest" value="Quest3"/>
    </properties>
   </object>

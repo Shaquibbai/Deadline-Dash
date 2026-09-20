@@ -54,11 +54,11 @@ public class IntruderQuestTest {
     @Test
     public void testQuestGiverMarkersAndStartPrompt() {
         // Before quest start
-        assertEquals(QuestMarker.QUEST_AVAILABLE, controller.getMarkerForNpc("Shaquib"));
-        assertEquals(IntruderQuestController.DIALOGUE_GIVER_INTRO, controller.getDialogueForNpc("Shaquib", "default"));
+        assertEquals(QuestMarker.QUEST_AVAILABLE, controller.getMarkerForNpc("Shihab"));
+        assertEquals(IntruderQuestController.DIALOGUE_GIVER_INTRO, controller.getDialogueForNpc("Shihab", "default"));
 
         // Finish intro dialogue
-        boolean prompted = controller.onDialogueCompleted(IntruderQuestController.DIALOGUE_GIVER_INTRO, "Shaquib", repSystem);
+        boolean prompted = controller.onDialogueCompleted(IntruderQuestController.DIALOGUE_GIVER_INTRO, "Shihab", repSystem);
         assertTrue(prompted);
         assertTrue(controller.isStartPromptActive());
 
@@ -68,11 +68,11 @@ public class IntruderQuestTest {
         assertEquals(IntruderQuestController.State.NOT_STARTED, controller.getState());
 
         // Trigger prompt again and say YES
-        controller.onDialogueCompleted(IntruderQuestController.DIALOGUE_GIVER_INTRO, "Shaquib", repSystem);
+        controller.onDialogueCompleted(IntruderQuestController.DIALOGUE_GIVER_INTRO, "Shihab", repSystem);
         controller.onStartChoiceYes();
         assertEquals(IntruderQuestController.State.INVESTIGATION, controller.getState());
-        assertEquals(QuestMarker.NONE, controller.getMarkerForNpc("Shaquib"));
-        assertEquals(IntruderQuestController.DIALOGUE_GIVER_WAITING, controller.getDialogueForNpc("Shaquib", "default"));
+        assertEquals(QuestMarker.NONE, controller.getMarkerForNpc("Shihab"));
+        assertEquals(IntruderQuestController.DIALOGUE_GIVER_WAITING, controller.getDialogueForNpc("Shihab", "default"));
     }
 
     @Test
@@ -166,7 +166,7 @@ public class IntruderQuestTest {
         assertTrue(controller.isQuestCompleted());
         assertTrue(controller.isCompletionBannerActive());
         assertEquals(initialRep + 35, repSystem.getRep());
-        assertEquals(IntruderQuestController.DIALOGUE_GIVER_COMPLETE, controller.getDialogueForNpc("Shaquib", "default"));
+        assertEquals(IntruderQuestController.DIALOGUE_GIVER_COMPLETE, controller.getDialogueForNpc("Shihab", "default"));
 
         controller.dismissCompletionBanner();
         assertFalse(controller.isCompletionBannerActive());
