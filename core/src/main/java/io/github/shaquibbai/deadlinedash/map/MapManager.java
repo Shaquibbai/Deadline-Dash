@@ -214,6 +214,10 @@ public class MapManager {
                                 targetMapPath = AssetPaths.MAP_AB2_LOBBY;
                                 targetSpawnName = "PlayerSpawn";
                                 break;
+                            case "AB2_Lobby_to_AB2":
+                                targetMapPath = AssetPaths.MAP_IUT_CAMPUS;
+                                targetSpawnName = "PlayerSpawn_from_AB2_Lobby";
+                                break;
                             case "CDS_to_CdsInside":
                             default:
                                 // CDS and unmapped transitions keep detection behavior only

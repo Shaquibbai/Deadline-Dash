@@ -807,9 +807,9 @@ public class GameScreen implements Screen {
             case "Cafe_to_CafeInside":
                 return "Do you want to enter cafeteria?";
             case "AB1_to_AB1Inside":
-                return "Do you want to enter Academic Building 1?";
+                return "Do you want to enter Academic Building 2?";
             case "AB1_Lobby_to_AB1":
-                return "Do you want to exit Academic Building 1?";
+                return "Do you want to exit Academic Building 2?";
             case "AB1_Lobby_to_AB1_Class1":
                 return "Do you want to enter class?";
             case "AB1_Class1_to_AB1_Lobby":
@@ -825,6 +825,10 @@ public class GameScreen implements Screen {
             case "CDSInsideFront_to_CDSFront":
             case "CDSInsideBack_to_CDSBack":
                 return "Do you want to exit CDS?";
+            case "AB2_to_AB2Inside":
+                return "Do you want to enter Academic Building 1?";
+            case "AB2_Lobby_to_AB2":
+                return "Do you want to exit Academic Building 1?";
             default:
                 return null;
         }
