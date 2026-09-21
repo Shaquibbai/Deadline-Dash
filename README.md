@@ -16,6 +16,14 @@ Deadline Dash drops you into a race against the clock on the IUT campus. Explore
 - Countdown timer (36 in-game hours / 18 real-world minutes)
 - Multiple endings based on your choices
 
+##Developers
+
+Shaquib Wasif - 226; Worked on initial project structure, all the maps, player animation and movement, camera, rep points, timer implementation, opening scene and 2 ending scenes, and quest 1 (football minigame).
+
+Talha Bin Monir - 238; Worked on map collission, transition, generation spritsheets, quest 3 (intruder quest).
+
+Shihab Alam Khan - 236; Worked on npc system modeling, dialogue system, quest manager, quest 2 (laptop quest).
+
 ## Built With
 
 - [Java 21](https://openjdk.org/projects/jdk/21/)
@@ -75,6 +83,8 @@ Deadline-Dash/
 ```
 
 ## Links
+GitHub Repository:
+https://github.com/Shaquibbai/Deadline-Dash
 
-- **Repository:** [github.com/Shaquibbai/Deadline-Dash](https://github.com/Shaquibbai/Deadline-Dash)
-- **Presentation Video:** coming soon
+Presentation Video:
+https://www.youtube.com/watch?v=x2hmunJz5Ps
