@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="90" tilewidth="64" tileheight="64" infinite="0" nextlayerid="9" nextobjectid="26">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="90" tilewidth="64" tileheight="64" infinite="0" nextlayerid="10" nextobjectid="41">
  <tileset firstgid="1" source="../tilesets/lobby_2.tsx"/>
  <tileset firstgid="385" source="../tilesets/lobby_1.tsx"/>
  <layer id="3" name="TileLayer2" width="30" height="90">
@@ -193,6 +193,78 @@
  <objectgroup id="4" name="PlayerSpawns">
   <object id="1" name="PlayerSpawn" x="476" y="4324">
    <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="9" name="NPCs">
+  <object id="26" type="NPC" x="686.988" y="3386.86" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female03_Right"/>
+   </properties>
+  </object>
+  <object id="27" type="NPC" x="1079.59" y="3966.53" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female02_Forward"/>
+   </properties>
+  </object>
+  <object id="29" type="NPC" x="1101.32" y="4103.53" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Male12_Left"/>
+   </properties>
+  </object>
+  <object id="30" type="NPC" x="1125.99" y="3968.87" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Male10_Left"/>
+   </properties>
+  </object>
+  <object id="31" type="NPC" x="1147.96" y="4030.86" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female12_Left"/>
+   </properties>
+  </object>
+  <object id="32" type="NPC" x="1209.36" y="3431.85" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female07_Right"/>
+   </properties>
+  </object>
+  <object id="33" type="NPC" x="923.694" y="2976.52" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female10_Forward"/>
+   </properties>
+  </object>
+  <object id="34" type="NPC" x="1203.02" y="3508.52" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female09_Backward"/>
+   </properties>
+  </object>
+  <object id="35" type="NPC" x="1269.69" y="3519.85" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female08_Backward"/>
+   </properties>
+  </object>
+  <object id="36" type="NPC" x="1295.36" y="3439.85" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female11_Left"/>
+   </properties>
+  </object>
+  <object id="37" type="NPC" x="838.332" y="1026.33" width="78.6667" height="88">
+   <properties>
+    <property name="model" value="Male04_Right"/>
+   </properties>
+  </object>
+  <object id="38" type="NPC" x="907.002" y="1029.67" width="78.6667" height="88">
+   <properties>
+    <property name="model" value="Female04_Left"/>
+   </properties>
+  </object>
+  <object id="39" type="NPC" x="806.667" y="2475.33" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female02_Forward"/>
+   </properties>
+  </object>
+  <object id="40" type="NPC" x="988.909" y="4046.24" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Male15_Forward"/>
+   </properties>
   </object>
  </objectgroup>
  <objectgroup id="8" name="SceneTransitions">

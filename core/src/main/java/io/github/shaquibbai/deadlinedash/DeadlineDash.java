@@ -19,6 +19,7 @@ public class DeadlineDash extends Game {
     }
 
     private boolean openingDialogueSeen = false;
+    private boolean detailedInfoEnabled = false;
 
     public boolean hasOpeningDialogueBeenSeen() {
         return openingDialogueSeen;
@@ -26,6 +27,14 @@ public class DeadlineDash extends Game {
 
     public void setOpeningDialogueSeen(boolean seen) {
         this.openingDialogueSeen = seen;
+    }
+
+    public boolean isDetailedInfoEnabled() {
+        return detailedInfoEnabled;
+    }
+
+    public void setDetailedInfoEnabled(boolean enabled) {
+        this.detailedInfoEnabled = enabled;
     }
 
     @Override

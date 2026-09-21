@@ -49,8 +49,9 @@ public class TitleScreen implements Screen {
     private final Rectangle optionsButton = new Rectangle(BTN_X, 122f, BTN_W, BTN_H);
     private final Rectangle quitButton = new Rectangle(BTN_X, 59f, BTN_W, BTN_H);
 
-    // Simple Options modal Back button
-    private final Rectangle optionsBackBtn = new Rectangle((1280f - 180f) / 2f, 270f, 180f, 45f);
+    // Options modal Buttons
+    private final Rectangle detailedInfoBtn = new Rectangle((1280f - 340f) / 2f, 370f, 340f, 48f);
+    private final Rectangle optionsBackBtn = new Rectangle((1280f - 180f) / 2f, 290f, 180f, 45f);
 
     private float animTime = 0f;
     private float revealTimer = 0f;
@@ -238,10 +239,12 @@ public class TitleScreen implements Screen {
         batch.draw(whitePixel, modalX, modalY, 3, modalH);
         batch.draw(whitePixel, modalX + modalW - 3, modalY, 3, modalH);
 
-        // Message: "Maybe later..."
-        buttonFont.setColor(Color.WHITE);
-        layout.setText(buttonFont, "Maybe later...");
-        buttonFont.draw(batch, "Maybe later...", modalX + (modalW - layout.width) / 2f, modalY + modalH - 60f);
+        // Detailed Info Toggle Button
+        boolean isDetailed = game.isDetailedInfoEnabled();
+        String toggleText = "Detailed Info: " + (isDetailed ? "ON" : "OFF");
+        boolean infoHover = detailedInfoBtn.contains(mousePos.x, mousePos.y);
+        Color accentColor = isDetailed ? new Color(0.2f, 0.75f, 0.4f, 1f) : new Color(0.85f, 0.35f, 0.2f, 1f);
+        drawButton(detailedInfoBtn, toggleText, infoHover, accentColor);
 
         // Back Button
         boolean backHover = optionsBackBtn.contains(mousePos.x, mousePos.y);
@@ -276,14 +279,17 @@ public class TitleScreen implements Screen {
                 }
             }
         } else {
-            if (escPressed || spacePressed || enterPressed) {
+            if (escPressed) {
                 isOptionsOpen = false;
                 clickCooldown = 0.2f;
                 return;
             }
 
             if (justClicked) {
-                if (optionsBackBtn.contains(mousePos.x, mousePos.y)) {
+                if (detailedInfoBtn.contains(mousePos.x, mousePos.y)) {
+                    game.setDetailedInfoEnabled(!game.isDetailedInfoEnabled());
+                    clickCooldown = 0.2f;
+                } else if (optionsBackBtn.contains(mousePos.x, mousePos.y)) {
                     isOptionsOpen = false;
                     clickCooldown = 0.2f;
                 }

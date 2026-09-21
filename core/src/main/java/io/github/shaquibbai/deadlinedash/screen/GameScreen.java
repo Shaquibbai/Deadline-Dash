@@ -604,28 +604,30 @@ public class GameScreen implements Screen {
         // 1. Render REP Points HUD (Top Left)
         renderRepHUD();
 
-        // 2. On-Screen Debug Info HUD (Left Side, positioned cleanly below REP)
-        float margin = 20f;
-        float startY = VIRTUAL_HEIGHT - 65f;
-        debugFont.draw(batch, String.format("PLAYER POS : X=%.1f, Y=%.1f [Tile X=%.0f, Y=%.0f]", player.getX(), player.getY(), player.getX() / 64f, player.getY() / 64f), margin, startY);
-        debugFont.draw(batch, String.format("CAMERA POS : X=%.1f, Y=%.1f | ZOOM: %.2f (M: In, N: Out)", camera.position.x, camera.position.y, camera.zoom), margin, startY - 25f);
-        debugFont.draw(batch, String.format("DIRECTION  : %s | SPEED: %.0f px/s", player.getCurrentDirection(), player.getMoveSpeed()), margin, startY - 50f);
-        debugFont.draw(batch, String.format("MODE       : %s", isF3Pressed ? "FREE CAMERA MODE (WASD moves camera)" : "NORMAL MODE (WASD moves player)"), margin, startY - 75f);
-        debugFont.draw(batch, "PRESS [F]  : Interact with NPC / Advance Dialogue | [E] : Test item pickup | [R] : +5 REP", margin, startY - 100f);
+        // 2. On-Screen Debug Info HUD (Left Side, positioned cleanly below REP - Controlled by Options setting)
+        if (game.isDetailedInfoEnabled()) {
+            float margin = 20f;
+            float startY = VIRTUAL_HEIGHT - 65f;
+            debugFont.draw(batch, String.format("PLAYER POS : X=%.1f, Y=%.1f [Tile X=%.0f, Y=%.0f]", player.getX(), player.getY(), player.getX() / 64f, player.getY() / 64f), margin, startY);
+            debugFont.draw(batch, String.format("CAMERA POS : X=%.1f, Y=%.1f | ZOOM: %.2f (M: In, N: Out)", camera.position.x, camera.position.y, camera.zoom), margin, startY - 25f);
+            debugFont.draw(batch, String.format("DIRECTION  : %s | SPEED: %.0f px/s", player.getCurrentDirection(), player.getMoveSpeed()), margin, startY - 50f);
+            debugFont.draw(batch, String.format("MODE       : %s", isF3Pressed ? "FREE CAMERA MODE (WASD moves camera)" : "NORMAL MODE (WASD moves player)"), margin, startY - 75f);
+            debugFont.draw(batch, "PRESS [F]  : Interact with NPC / Advance Dialogue | [E] : Test item pickup | [R] : +5 REP", margin, startY - 100f);
 
-        String transitionStatus = "NONE";
-        if (currentInsideTransition != null) {
-            transitionStatus = "INSIDE: " + currentInsideTransition.getName();
-        } else if (transitionMessageTimer > 0f) {
-            transitionStatus = "TRIGGERED: " + triggeredTransitionName;
-        }
-        debugFont.draw(batch, String.format("TRANSITION : %s", transitionStatus), margin, startY - 125f);
+            String transitionStatus = "NONE";
+            if (currentInsideTransition != null) {
+                transitionStatus = "INSIDE: " + currentInsideTransition.getName();
+            } else if (transitionMessageTimer > 0f) {
+                transitionStatus = "TRIGGERED: " + triggeredTransitionName;
+            }
+            debugFont.draw(batch, String.format("TRANSITION : %s", transitionStatus), margin, startY - 125f);
 
-        if (transitionMessageTimer > 0f || currentInsideTransition != null) {
-            String activeName = currentInsideTransition != null ? currentInsideTransition.getName() : triggeredTransitionName;
-            debugFont.setColor(Color.RED);
-            debugFont.draw(batch, "TRANSITION TRIGGERED: " + activeName, VIRTUAL_WIDTH / 2f - 220f, VIRTUAL_HEIGHT - 40f);
-            debugFont.setColor(Color.YELLOW);
+            if (transitionMessageTimer > 0f || currentInsideTransition != null) {
+                String activeName = currentInsideTransition != null ? currentInsideTransition.getName() : triggeredTransitionName;
+                debugFont.setColor(Color.RED);
+                debugFont.draw(batch, "TRANSITION TRIGGERED: " + activeName, VIRTUAL_WIDTH / 2f - 220f, VIRTUAL_HEIGHT - 40f);
+                debugFont.setColor(Color.YELLOW);
+            }
         }
 
         // 3. Render Gameplay HUD: Intruders Counter, Backpack Icon, and Countdown Timer

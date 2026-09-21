@@ -8,7 +8,7 @@ You have **36 in-game hours (18 real minutes)** to find your teammates, complete
 - IUT campus exploration
 - NPC dialogue and quests
 - Item collection & backpack
-- REP system
+- REPUTATION system
 - Football mini-game
 - Countdown timer
 - Multiple endings
