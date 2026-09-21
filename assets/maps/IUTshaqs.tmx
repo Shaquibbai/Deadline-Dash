@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="1584" height="528" tilewidth="64" tileheight="64" infinite="0" nextlayerid="23" nextobjectid="447">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="1584" height="528" tilewidth="64" tileheight="64" infinite="0" nextlayerid="23" nextobjectid="482">
  <tileset firstgid="1" name="roads" tilewidth="64" tileheight="64" tilecount="384" columns="24">
   <image source="../tilesets/roads.png" width="1536" height="1024"/>
  </tileset>
@@ -2691,7 +2691,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="13" name="Collision">
+ <objectgroup id="13" name="Collision" visible="0">
   <object id="27" name="mechaLab" x="20382.7" y="19396.6" width="3563.88" height="930.394"/>
   <object id="31" name="Ab1_1" x="14877.3" y="19326.7" width="839.515" height="607.333"/>
   <object id="32" name="Ab1_7" x="14748.4" y="19904" width="3824.91" height="190.667"/>
@@ -3063,8 +3063,173 @@
     <property name="quest" value="Quest3"/>
    </properties>
   </object>
+  <object id="447" type="NPC" x="5417.67" y="4749.67" width="96" height="88">
+   <properties>
+    <property name="model" value="Female11_Right"/>
+   </properties>
+  </object>
+  <object id="448" type="NPC" x="5489.33" y="4741.33" width="96" height="88">
+   <properties>
+    <property name="model" value="Female02_Right"/>
+   </properties>
+  </object>
+  <object id="449" type="NPC" x="1939.58" y="4744.79" width="96" height="88">
+   <properties>
+    <property name="model" value="Female03_Left"/>
+   </properties>
+  </object>
+  <object id="450" type="NPC" x="3701.7" y="4965.7" width="96" height="88">
+   <properties>
+    <property name="model" value="Male12_Left"/>
+   </properties>
+  </object>
+  <object id="451" type="NPC" x="10120.7" y="5062" width="96" height="88">
+   <properties>
+    <property name="model" value="Male15_Forward"/>
+   </properties>
+  </object>
+  <object id="452" type="NPC" x="7899.15" y="18588.5" width="96" height="88">
+   <properties>
+    <property name="model" value="Female01_Forward"/>
+   </properties>
+  </object>
+  <object id="453" type="NPC" x="7957.21" y="18582.7" width="96" height="88">
+   <properties>
+    <property name="model" value="Female07_Forward"/>
+   </properties>
+  </object>
+  <object id="454" type="NPC" x="2204.42" y="4972.97" width="96" height="88">
+   <properties>
+    <property name="model" value="Male11_Right"/>
+   </properties>
+  </object>
+  <object id="455" type="NPC" x="1985.33" y="5062.06" width="96" height="88">
+   <properties>
+    <property name="model" value="Male07_Forward"/>
+   </properties>
+  </object>
+  <object id="456" type="NPC" x="8018.67" y="18653.3" width="96" height="88">
+   <properties>
+    <property name="model" value="Male09_Left"/>
+   </properties>
+  </object>
+  <object id="457" type="NPC" x="7838.67" y="18666.7" width="96" height="88">
+   <properties>
+    <property name="model" value="Male04_Right"/>
+   </properties>
+  </object>
+  <object id="458" type="NPC" x="7934.67" y="18733.3" width="96" height="88">
+   <properties>
+    <property name="model" value="Female08_Backward"/>
+   </properties>
+  </object>
+  <object id="459" type="NPC" x="7442.48" y="15854.5" width="96" height="88">
+   <properties>
+    <property name="model" value="Female01_Forward"/>
+   </properties>
+  </object>
+  <object id="460" type="NPC" x="7500.54" y="15848.7" width="96" height="88">
+   <properties>
+    <property name="model" value="Female07_Forward"/>
+   </properties>
+  </object>
+  <object id="461" type="NPC" x="7562" y="15919.3" width="96" height="88">
+   <properties>
+    <property name="model" value="Male09_Left"/>
+   </properties>
+  </object>
+  <object id="462" type="NPC" x="7382" y="15932.7" width="96" height="88">
+   <properties>
+    <property name="model" value="Male04_Right"/>
+   </properties>
+  </object>
+  <object id="463" type="NPC" x="7478" y="15999.3" width="96" height="88">
+   <properties>
+    <property name="model" value="Female08_Backward"/>
+   </properties>
+  </object>
+  <object id="464" type="NPC" x="6732.48" y="16196.5" width="96" height="88">
+   <properties>
+    <property name="model" value="Male08_Forward"/>
+   </properties>
+  </object>
+  <object id="465" type="NPC" x="6800.54" y="16250.7" width="96" height="88">
+   <properties>
+    <property name="model" value="Male05_Left"/>
+   </properties>
+  </object>
+  <object id="467" type="NPC" x="6674" y="16270.7" width="96" height="88">
+   <properties>
+    <property name="model" value="Male12_Right"/>
+   </properties>
+  </object>
+  <object id="469" type="NPC" x="14220" y="19228" width="96" height="88">
+   <properties>
+    <property name="model" value="Male10_Left"/>
+   </properties>
+  </object>
+  <object id="470" type="NPC" x="14204" y="19672" width="96" height="88">
+   <properties>
+    <property name="model" value="Female09_Backward"/>
+   </properties>
+  </object>
+  <object id="471" type="NPC" x="14040" y="19888" width="96" height="88">
+   <properties>
+    <property name="model" value="Male03_Backward"/>
+   </properties>
+  </object>
+  <object id="472" type="NPC" x="14196" y="20276" width="96" height="88">
+   <properties>
+    <property name="model" value="Female05_Forward"/>
+   </properties>
+  </object>
+  <object id="473" type="NPC" x="14020" y="21020" width="96" height="88">
+   <properties>
+    <property name="model" value="Male02_Forward"/>
+   </properties>
+  </object>
+  <object id="474" type="NPC" x="14004" y="21508" width="96" height="88">
+   <properties>
+    <property name="model" value="Male07_Forward"/>
+   </properties>
+  </object>
+  <object id="475" type="NPC" x="14424" y="22396" width="96" height="88">
+   <properties>
+    <property name="model" value="Male10_Left"/>
+   </properties>
+  </object>
+  <object id="476" type="NPC" x="14808" y="22660" width="96" height="88">
+   <properties>
+    <property name="model" value="Female11_Right"/>
+   </properties>
+  </object>
+  <object id="477" type="NPC" x="16106.5" y="22738.5" width="96" height="88">
+   <properties>
+    <property name="model" value="Female12_Forward"/>
+   </properties>
+  </object>
+  <object id="478" type="NPC" x="16164.5" y="22732.7" width="96" height="88">
+   <properties>
+    <property name="model" value="Female01_Forward"/>
+   </properties>
+  </object>
+  <object id="479" type="NPC" x="16226" y="22803.3" width="96" height="88">
+   <properties>
+    <property name="model" value="Male10_Left"/>
+   </properties>
+  </object>
+  <object id="480" type="NPC" x="16046" y="22816.7" width="96" height="88">
+   <properties>
+    <property name="model" value="Male09_Right"/>
+   </properties>
+  </object>
+  <object id="481" type="NPC" x="16136" y="22867.3" width="96" height="88">
+   <properties>
+    <property name="model" value="Male06_Backward"/>
+   </properties>
+  </object>
  </objectgroup>
- <objectgroup id="15" name="SceneTransitions">
+ <objectgroup id="15" name="SceneTransitions" visible="0">
   <object id="364" name="AB1_to_AB1Inside" x="15650" y="23642.7" width="502" height="168"/>
   <object id="406" name="AB2_to_AB2Inside" x="15709.9" y="19552.3" width="421" height="148"/>
   <object id="407" name="CDSFront_to_CDSInsideFront" x="7470.67" y="18196" width="234.667" height="146.667"/>
@@ -3073,7 +3238,7 @@
   <object id="424" name="CDSBack_to_CDSInsideBack" x="5816" y="17140" width="692" height="172"/>
   <object id="425" name="CDSBack_to_CDSInsideBack" x="7580" y="16756" width="196" height="524"/>
  </objectgroup>
- <objectgroup id="16" name="PlayerSpawns">
+ <objectgroup id="16" name="PlayerSpawns" visible="0">
   <object id="412" name="PlayerSpawn_from_AB1_Lobby" x="15858" y="23542">
    <point/>
   </object>

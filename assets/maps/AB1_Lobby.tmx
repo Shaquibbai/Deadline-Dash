@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="90" tilewidth="64" tileheight="64" infinite="0" nextlayerid="10" nextobjectid="40">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="30" height="90" tilewidth="64" tileheight="64" infinite="0" nextlayerid="10" nextobjectid="54">
  <tileset firstgid="1" source="../tilesets/lobby_2.tsx"/>
  <tileset firstgid="385" source="../tilesets/lobby_1.tsx"/>
  <layer id="3" name="TileLayer2" width="30" height="90">
@@ -226,29 +226,74 @@
   <object id="33" name="walls" x="416.667" y="926" width="45.3333" height="310"/>
  </objectgroup>
  <objectgroup id="9" name="NPCs">
-  <object id="35" type="NPC" x="1196.67" y="4318" width="78.6667" height="88">
+  <object id="40" type="NPC" x="874.332" y="994.33" width="78.6667" height="88">
    <properties>
-    <property name="model" value="Male16_Forward"/>
+    <property name="model" value="Male04_Right"/>
    </properties>
   </object>
-  <object id="36" type="NPC" x="1250.67" y="4378" width="78.6667" height="88">
+  <object id="41" type="NPC" x="943.002" y="997.67" width="78.6667" height="88">
    <properties>
-    <property name="model" value="Male15_Left"/>
+    <property name="model" value="Female04_Left"/>
    </properties>
   </object>
-  <object id="37" type="NPC" x="1148.67" y="4380" width="78.6667" height="88">
+  <object id="42" type="NPC" x="790.667" y="2237.33" width="62.6667" height="77.3333">
    <properties>
-    <property name="model" value="Female16_Right"/>
+    <property name="model" value="Female02_Forward"/>
    </properties>
   </object>
-  <object id="38" type="NPC" x="553.939" y="4386.48" width="78.6667" height="88">
+  <object id="43" type="NPC" x="946.667" y="2861.33" width="62.6667" height="77.3333">
    <properties>
-    <property name="model" value="Female16_Left"/>
+    <property name="model" value="Female10_Forward"/>
    </properties>
   </object>
-  <object id="39" type="NPC" x="767.879" y="3196.79" width="78.6667" height="88">
+  <object id="44" type="NPC" x="704.667" y="3403.33" width="62.6667" height="77.3333">
    <properties>
-    <property name="model" value="Female14_Forward"/>
+    <property name="model" value="Female03_Right"/>
+   </properties>
+  </object>
+  <object id="45" type="NPC" x="1338.93" y="3460.66" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female07_Right"/>
+   </properties>
+  </object>
+  <object id="46" type="NPC" x="1364.59" y="3528" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female09_Backward"/>
+   </properties>
+  </object>
+  <object id="47" type="NPC" x="1416.59" y="3531.33" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female08_Backward"/>
+   </properties>
+  </object>
+  <object id="48" type="NPC" x="1410.26" y="3458" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female11_Left"/>
+   </properties>
+  </object>
+  <object id="49" type="NPC" x="1331.52" y="4252.59" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female02_Forward"/>
+   </properties>
+  </object>
+  <object id="50" type="NPC" x="1353.25" y="4354.93" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Male12_Left"/>
+   </properties>
+  </object>
+  <object id="51" type="NPC" x="1380.58" y="4265.6" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Male10_Left"/>
+   </properties>
+  </object>
+  <object id="52" type="NPC" x="1403.89" y="4319.59" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Female12_Left"/>
+   </properties>
+  </object>
+  <object id="53" type="NPC" x="1272.84" y="4332.31" width="62.6667" height="77.3333">
+   <properties>
+    <property name="model" value="Male15_Forward"/>
    </properties>
   </object>
  </objectgroup>
