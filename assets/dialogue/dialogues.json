@@ -11,40 +11,11 @@
       },
       {
         "speaker": "player",
-        "text": "lets go to class first in ab2...."
+        "text": "lets go to class first in ab2..."
       },
       {
         "speaker": "player",
         "text": "lets take the road through the 5 pillars"
-      }
-    ]
-  },
-
-  "milu_intro": {
-    "lines": [
-      {
-        "speaker": "npc",
-        "text": "How many did you finish?"
-      },
-      {
-        "speaker": "player",
-        "text": "2 sir."
-      },
-      {
-        "speaker": "npc",
-        "text": "Okay. Explain this one. Why are you sorting by start time?"
-      },
-      {
-        "speaker": "player",
-        "text": "I copied, sir."
-      },
-      {
-        "speaker": "npc",
-        "text": "Wow. At least learn how it works. What is even the point of this lab if you copy from others?"
-      },
-      {
-        "speaker": "npc",
-        "text": "--then he wasted 6-7 minutes of your life--"
       }
     ]
   },
@@ -134,7 +105,7 @@
     },
     {
       "speaker": "player",
-      "text": "So YOU WANT ME TO GET YOUR LAPTOP FROM HER!!!!!!!"
+      "text": "So YOU WANT ME TO GET YOUR LAPTOP FROM HER!!!!!!!!"
     },
     {
       "speaker": "npc",
@@ -142,7 +113,7 @@
     },
     {
       "speaker": "player",
-      "text": "You don't even see my texts, and you say for old times' sake…………. Whatever, where is she?"
+      "text": "You don't even see my texts, and you say for old times' sake..... Whatever, where is she?"
     },
     {
       "speaker": "npc",
