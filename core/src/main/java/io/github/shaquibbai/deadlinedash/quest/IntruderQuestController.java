@@ -26,6 +26,16 @@ public class IntruderQuestController {
         COMPLETED
     }
 
+    public interface IntruderQuestCompletionListener {
+        void onIntruderQuestCompleted();
+    }
+
+    private IntruderQuestCompletionListener completionListener;
+
+    public void setCompletionListener(IntruderQuestCompletionListener listener) {
+        this.completionListener = listener;
+    }
+
     public static class QuestNPC {
         private final String name;
         private final int registrationNumber;
@@ -299,6 +309,9 @@ public class IntruderQuestController {
                             repSystem.addRep(35); // Award REP for completing intruder hunt
                         }
                         System.out.println("[INTRUDER QUEST] All 5 intruders found! Quest completed.");
+                        if (completionListener != null) {
+                            completionListener.onIntruderQuestCompleted();
+                        }
                     }
                     return true;
                 } else {

@@ -131,6 +131,10 @@ public class GameScreen implements Screen {
     private void initDialogueSystem() {
         dialogueManager = new DialogueManager();
         dialogueUI = new DialogueUI();
+
+        if (!game.hasOpeningDialogueBeenSeen()) {
+            dialogueManager.startSelfDialogue("opening_self_dialogue");
+        }
     }
 
     private void initQuestSystem() {
@@ -148,8 +152,18 @@ public class GameScreen implements Screen {
             checkEarlyWinEnding();
         });
 
+        intruderQuestController.setCompletionListener(() -> {
+            questManager.recordTaskCompleted("IntruderQuest");
+            checkEarlyWinEnding();
+        });
+
 
         dialogueManager.setCompletionListener((dialogueId, npc) -> {
+            if ("opening_self_dialogue".equalsIgnoreCase(dialogueId)) {
+                game.setOpeningDialogueSeen(true);
+                return; // skip quest/dialogue processing for this synthetic dialogue
+            }
+
             String npcName = npc != null ? npc.getName() : "";
             String toastMsg = questManager.onDialogueCompleted(dialogueId, npcName, backpack, repSystem);
             if (toastMsg != null && !toastMsg.isEmpty()) {

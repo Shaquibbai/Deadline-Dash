@@ -161,6 +161,32 @@ public class DialogueManager {
     }
 
     /**
+     * Starts a self-dialogue (soliloquy) for the player without requiring an NPC.
+     *
+     * @param dialogueId target dialogue ID
+     * @return true if dialogue successfully started, false otherwise
+     */
+    public boolean startSelfDialogue(String dialogueId) {
+        if (dialogueId == null || dialogueId.trim().isEmpty() || "NONE".equalsIgnoreCase(dialogueId.trim())) {
+            return false;
+        }
+
+        Dialogue dialogue = dialogues.get(dialogueId.trim());
+        if (dialogue == null || dialogue.isEmpty()) {
+            System.err.printf("[DIALOGUE] WARNING: Dialogue '%s' not found for self dialogue.%n", dialogueId);
+            return false;
+        }
+
+        this.currentNpc = null;
+        this.currentDialogue = dialogue;
+        this.currentLineIndex = 0;
+        this.active = true;
+
+        System.out.printf("[DIALOGUE] Started self dialogue '%s'%n", dialogue.getId());
+        return true;
+    }
+
+    /**
      * Advances to the next line in the current dialogue or closes it after the last line.
      */
     public void advanceDialogue() {

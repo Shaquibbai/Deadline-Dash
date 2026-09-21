@@ -7,7 +7,7 @@ package io.github.shaquibbai.deadlinedash.ending;
  * Includes a guard flag to prevent multiple ending triggers.
  */
 public class EndingController {
-    public static final int REQUIRED_TASKS = 2;
+    public static final int REQUIRED_TASKS = 3;
     public static final float EARLY_WIN_HOUR_THRESHOLD = 15.0f;
 
     private boolean endingTriggered = false;

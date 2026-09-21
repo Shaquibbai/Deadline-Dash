@@ -1,4 +1,25 @@
 {
+  "opening_self_dialogue": {
+    "lines": [
+      {
+        "speaker": "player",
+        "text": "okay need to find those guys fast"
+      },
+      {
+        "speaker": "player",
+        "text": "but where should i start looking for them??"
+      },
+      {
+        "speaker": "player",
+        "text": "lets go to class first in ab2...."
+      },
+      {
+        "speaker": "player",
+        "text": "lets take the road through the 5 pillars"
+      }
+    ]
+  },
+
   "milu_intro": {
     "lines": [
       {

@@ -402,8 +402,8 @@ public class MapManager {
             worldBounds.set(minX, minY, maxX - minX, maxY - minY);
         }
 
-        // Initial spawn coordinate at campus entrance road hub
-        defaultSpawnPosition.set(5120.0f, 32000.0f);
+        // Initial spawn coordinate at outdoor campus position (tile X~31, Y~451)
+        defaultSpawnPosition.set(2007.8f, 28838.5f);
     }
 
     private void updateLayerIndices() {

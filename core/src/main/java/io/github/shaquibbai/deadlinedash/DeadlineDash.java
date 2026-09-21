@@ -18,6 +18,16 @@ public class DeadlineDash extends Game {
         return batch;
     }
 
+    private boolean openingDialogueSeen = false;
+
+    public boolean hasOpeningDialogueBeenSeen() {
+        return openingDialogueSeen;
+    }
+
+    public void setOpeningDialogueSeen(boolean seen) {
+        this.openingDialogueSeen = seen;
+    }
+
     @Override
     public void dispose() {
         super.dispose();
